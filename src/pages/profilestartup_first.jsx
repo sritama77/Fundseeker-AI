@@ -270,7 +270,7 @@ function ProfileStartupFirst({ pageSet }) {
                                                             _hover={{ color: "red.500" }}
                                                             fontWeight="bold"
                                                         >
-                                                            ×
+                                                            x
                                                         </Box>
                                                     </Box>
                                                 ))
@@ -312,6 +312,7 @@ function ProfileStartupFirst({ pageSet }) {
                                                         }}
                                                         onClick={() => {
                                                             handleIndustryToggle(industry);
+                                                            console.log(StartupIndustryCategories);
                                                         }}
                                                     >
                                                         <Box
