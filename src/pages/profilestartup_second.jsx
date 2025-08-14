@@ -5,11 +5,11 @@ import { useState } from "react"
 
 function ProfileStartupSecond({ pageSet }) {
     const [sBriefPitch, setSBriefPitch] = useState("")
-    const [sProblemStatement, setSProblemStatement] = useState("");
-    const [sSolution, setSSolution] = useState("");
-    const [sBusinessModel, setSBusinessModel] = useState("");
-    const [sElevatorPitch, setSElevatorPitch] = useState("");
-    const [sCompetitors, setSCompetitors] = useState("");
+    const [ProblemStatement, setProblemStatement] = useState("");
+    const [Solution, setSolution] = useState("");
+    const [BusinessModel, setBusinessModel] = useState("");
+    const [ElevatorPitch, setElevatorPitch] = useState("");
+    const [Competitors, setCompetitors] = useState("");
 
     return (
         <Box
@@ -165,8 +165,8 @@ function ProfileStartupSecond({ pageSet }) {
                                     </Field.Label>
                                     <Textarea
                                         placeholder="e.g. Farmers struggle to access affordable irrigation systems."
-                                        value={sProblemStatement}
-                                        onChange={(e) => setSProblemStatement(e.target.value)}
+                                        value={ProblemStatement}
+                                        onChange={(e) => setProblemStatement(e.target.value)}
                                         maxLength={150}
                                         height="100%"
                                         width="100%"
@@ -177,7 +177,7 @@ function ProfileStartupSecond({ pageSet }) {
                                         resize="none"
                                     />
                                     <Field.HelperText color="rgba(255, 255, 255, 0.7)" fontSize="11px">
-                                        Define the core problem. ({sProblemStatement.length}/150)
+                                        Define the core problem. ({ProblemStatement.length}/150)
                                     </Field.HelperText>
                                 </Field.Root>
                             </Box>
@@ -190,8 +190,8 @@ function ProfileStartupSecond({ pageSet }) {
                                     </Field.Label>
                                     <Textarea
                                         placeholder="e.g. We provide solar-powered irrigation pumps at 40% lower cost."
-                                        value={sSolution}
-                                        onChange={(e) => setSSolution(e.target.value)}
+                                        value={Solution}
+                                        onChange={(e) => setSolution(e.target.value)}
                                         maxLength={150}
                                         height="100%"
                                         width="100%"
@@ -202,7 +202,7 @@ function ProfileStartupSecond({ pageSet }) {
                                         resize="none"
                                     />
                                     <Field.HelperText color="rgba(255, 255, 255, 0.7)" fontSize="11px">
-                                        Explain how they solve the problem. ({sSolution.length}/150)
+                                        Explain how they solve the problem. ({Solution.length}/150)
                                     </Field.HelperText>
                                 </Field.Root>
                             </Box>
@@ -215,8 +215,8 @@ function ProfileStartupSecond({ pageSet }) {
                                     </Field.Label>
                                     <Textarea
                                         placeholder="e.g. Subscription-based SaaS model charging $49/month."
-                                        value={sBusinessModel}
-                                        onChange={(e) => setSBusinessModel(e.target.value)}
+                                        value={BusinessModel}
+                                        onChange={(e) => setBusinessModel(e.target.value)}
                                         maxLength={150}
                                         height="100%"
                                         width="100%"
@@ -227,7 +227,7 @@ function ProfileStartupSecond({ pageSet }) {
                                         resize="none"
                                     />
                                     <Field.HelperText color="rgba(255, 255, 255, 0.7)" fontSize="11px">
-                                        Explain how revenue is generated. ({sBusinessModel.length}/150)
+                                        Explain how revenue is generated. ({BusinessModel.length}/150)
                                     </Field.HelperText>
                                 </Field.Root>
                             </Box>
@@ -240,8 +240,8 @@ function ProfileStartupSecond({ pageSet }) {
                                     </Field.Label>
                                     <Textarea
                                         placeholder="e.g. We create affordable solar-powered devices to bring electricity to underserved communities."
-                                        value={sElevatorPitch}
-                                        onChange={(e) => setSElevatorPitch(e.target.value)}
+                                        value={ElevatorPitch}
+                                        onChange={(e) => setElevatorPitch(e.target.value)}
                                         maxLength={200}
                                         height="100%"
                                         width="100%"
@@ -252,7 +252,7 @@ function ProfileStartupSecond({ pageSet }) {
                                         resize="none"
                                     />
                                     <Field.HelperText color="rgba(255, 255, 255, 0.7)" fontSize="11px">
-                                        Keep short and impactful. ({sElevatorPitch.length}/200)
+                                        Keep short and impactful. ({ElevatorPitch.length}/200)
                                     </Field.HelperText>
                                 </Field.Root>
                             </Box>
@@ -265,8 +265,8 @@ function ProfileStartupSecond({ pageSet }) {
                                     </Field.Label>
                                     <Textarea
                                         placeholder="e.g. Compete with AgriTechCo but offer faster installation and better warranty."
-                                        value={sCompetitors}
-                                        onChange={(e) => setSCompetitors(e.target.value)}
+                                        value={Competitors}
+                                        onChange={(e) => setCompetitors(e.target.value)}
                                         maxLength={150}
                                         height="100%"
                                         width="100%"
@@ -277,7 +277,7 @@ function ProfileStartupSecond({ pageSet }) {
                                         resize="none"
                                     />
                                     <Field.HelperText color="rgba(255, 255, 255, 0.7)" fontSize="11px">
-                                        Shows unique advantage. ({sCompetitors.length}/150)
+                                        Shows unique advantage. ({Competitors.length}/150)
                                     </Field.HelperText>
                                 </Field.Root>
                             </Box>

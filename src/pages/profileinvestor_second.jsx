@@ -4,12 +4,12 @@ import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, F
 import { useState } from "react";
 
 function ProfileInvestorSecond({ pageSet }) {
-    const [iCheckSizeRange, setICheckSizeRange] = useState([]);
+    const [CheckSizeRange, setCheckSizeRange] = useState([]);
     const [isCheckSizeDropdownOpen, setIsCheckSizeDropdownOpen] = useState(false);
-    const [iBioThesis, setIBioThesis] = useState("");
-    const [iSyndicationPreference, setISyndicationPreference] = useState("");
+    const [BioThesis, setBioThesis] = useState("");
+    const [SyndicationPreference, setSyndicationPreference] = useState("");
     const [isSyndicationDropdownOpen, setIsSyndicationDropdownOpen] = useState(false);
-    const [iTicketType, setITicketType] = useState([]);
+    const [TicketType, setTicketType] = useState([]);
     const [isTicketTypeDropdownOpen, setIsTicketTypeDropdownOpen] = useState(false);
 
     const checkSizeOptions = [
@@ -39,7 +39,7 @@ function ProfileInvestorSecond({ pageSet }) {
     ];
 
     const handleCheckSizeToggle = (size) => {
-        setICheckSizeRange(prev => {
+        setCheckSizeRange(prev => {
             if (prev.includes(size)) {
                 return prev.filter(item => item !== size);
             } else {
@@ -49,11 +49,11 @@ function ProfileInvestorSecond({ pageSet }) {
     };
 
     const removeCheckSize = (sizeToRemove) => {
-        setICheckSizeRange(prev => prev.filter(size => size !== sizeToRemove));
+        setCheckSizeRange(prev => prev.filter(size => size !== sizeToRemove));
     };
 
     const handleTicketTypeToggle = (type) => {
-        setITicketType(prev => {
+        setTicketType(prev => {
             if (prev.includes(type)) {
                 return prev.filter(item => item !== type);
             } else {
@@ -63,7 +63,7 @@ function ProfileInvestorSecond({ pageSet }) {
     };
 
     const removeTicketType = (typeToRemove) => {
-        setITicketType(prev => prev.filter(type => type !== typeToRemove));
+        setTicketType(prev => prev.filter(type => type !== typeToRemove));
     };
 
     return (
@@ -217,12 +217,12 @@ function ProfileInvestorSecond({ pageSet }) {
                                                 borderColor: "white"
                                             }}
                                         >
-                                            {iCheckSizeRange.length === 0 ? (
+                                            {CheckSizeRange.length === 0 ? (
                                                 <Text color="rgba(255, 255, 255, 0.6)" fontSize="14px">
                                                     Select suitable options
                                                 </Text>
                                             ) : (
-                                                iCheckSizeRange.map((size) => (
+                                                CheckSizeRange.map((size) => (
                                                     <Box
                                                         key={size}
                                                         display="flex"
@@ -298,9 +298,9 @@ function ProfileInvestorSecond({ pageSet }) {
                                                             display="flex"
                                                             alignItems="center"
                                                             justifyContent="center"
-                                                            bg={iCheckSizeRange.includes(size) ? "#E5C48A" : "transparent"}
+                                                            bg={CheckSizeRange.includes(size) ? "#E5C48A" : "transparent"}
                                                         >
-                                                            {iCheckSizeRange.includes(size) && (
+                                                            {CheckSizeRange.includes(size) && (
                                                                 <Text color="#011F3C" fontSize="10px" fontWeight="bold">
                                                                     ✓
                                                                 </Text>
@@ -345,12 +345,12 @@ function ProfileInvestorSecond({ pageSet }) {
                                                 borderColor: "white"
                                             }}
                                         >
-                                            {iTicketType.length === 0 ? (
+                                            {TicketType.length === 0 ? (
                                                 <Text color="rgba(255, 255, 255, 0.6)" fontSize="14px">
                                                     Select suitable options
                                                 </Text>
                                             ) : (
-                                                iTicketType.map((type) => (
+                                                TicketType.map((type) => (
                                                     <Box
                                                         key={type}
                                                         display="flex"
@@ -426,9 +426,9 @@ function ProfileInvestorSecond({ pageSet }) {
                                                             display="flex"
                                                             alignItems="center"
                                                             justifyContent="center"
-                                                            bg={iTicketType.includes(type) ? "#E5C48A" : "transparent"}
+                                                            bg={TicketType.includes(type) ? "#E5C48A" : "transparent"}
                                                         >
-                                                            {iTicketType.includes(type) && (
+                                                            {TicketType.includes(type) && (
                                                                 <Text color="#011F3C" fontSize="10px" fontWeight="bold">
                                                                     ✓
                                                                 </Text>
@@ -451,8 +451,8 @@ function ProfileInvestorSecond({ pageSet }) {
                                     </Field.Label>
                                     <Textarea
                                         placeholder="We focus on early-stage cleantech startups."
-                                        value={iBioThesis}
-                                        onChange={(e) => setIBioThesis(e.target.value)}
+                                        value={BioThesis}
+                                        onChange={(e) => setBioThesis(e.target.value)}
                                         maxLength={200}
                                         height="100%"
                                         width="100%"
@@ -463,7 +463,7 @@ function ProfileInvestorSecond({ pageSet }) {
                                         resize="none"
                                     />
                                     <Text color="rgba(255, 255, 255, 0.7)" fontSize="11px" mt={1}>
-                                        eg : Make it concise but informative. ({iBioThesis.length}/200)
+                                        eg : Make it concise but informative. ({BioThesis.length}/200)
                                     </Text>
                                 </Field.Root>
                             </Box>
@@ -497,13 +497,13 @@ function ProfileInvestorSecond({ pageSet }) {
                                                 borderColor: "white"
                                             }}
                                         >
-                                            {iSyndicationPreference === "" ? (
+                                            {SyndicationPreference === "" ? (
                                                 <Text color="rgba(255, 255, 255, 0.6)" fontSize="14px">
                                                     Select suitable option
                                                 </Text>
                                             ) : (
                                                 <Text color="white" fontSize="14px">
-                                                    {iSyndicationPreference}
+                                                    {SyndicationPreference}
                                                 </Text>
                                             )}
                                             <Box ml="auto" fontSize="12px">
@@ -542,10 +542,10 @@ function ProfileInvestorSecond({ pageSet }) {
                                                             bg: "rgba(229, 196, 138, 0.2)"
                                                         }}
                                                         onClick={() => {
-                                                            setISyndicationPreference(option);
+                                                            setSyndicationPreference(option);
                                                             setIsSyndicationDropdownOpen(false);
                                                         }}
-                                                        bg={iSyndicationPreference === option ? "rgba(229, 196, 138, 0.3)" : "transparent"}
+                                                        bg={SyndicationPreference === option ? "rgba(229, 196, 138, 0.3)" : "transparent"}
                                                     >
                                                         <Text>{option}</Text>
                                                     </Box>

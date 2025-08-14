@@ -4,13 +4,13 @@ import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, F
 import { useState } from "react"
 
 function ProfileInvestorFirst({ pageSet }) {
-    const [iusername, setIusername] = useState("")
-    const [iwebsite, setIwebsite] = useState("");
-    const [ilocation, setIlocation] = useState("");
-    const [ihandle, setIhandle] = useState("");
-    const [selectedIndustries, setSelectedIndustries] = useState([]);
+    const [FirmName, setFirmName] = useState("")
+    const [InvestorWebsite, setInvestorWebsite] = useState("");
+    const [InvestorLocation, setInvestorLocation] = useState("");
+    const [InvestorSocialMedia, setInvestorSocialMedia] = useState("");
+    const [SelectedIndustries, setSelectedIndustries] = useState([]);
     const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
-    const [selectedStages, setSelectedStages] = useState([]);
+    const [SelectedStages, setSelectedStages] = useState([]);
     const [isStageDropdownOpen, setIsStageDropdownOpen] = useState(false);
 
     const industryOptions = [
@@ -196,10 +196,10 @@ function ProfileInvestorFirst({ pageSet }) {
                                     </Field.Label>
                                     <Input
                                         placeholder="VC firm or angel network name"
-                                        value={iusername}
+                                        value={FirmName}
                                         onChange={(e) => {
                                             const value = e.target.value;
-                                            setIusername(value);
+                                            setFirmName(value);
                                         }}
                                         height="100%"
                                         width="90%"
@@ -219,8 +219,8 @@ function ProfileInvestorFirst({ pageSet }) {
                                     </Field.Label>
                                     <Input
                                         placeholder="e.g. Partner, Angel Investor"
-                                        value={iwebsite}
-                                        onChange={(e) => setIwebsite(e.target.value)}
+                                        value={InvestorWebsite}
+                                        onChange={(e) => setInvestorWebsite(e.target.value)}
                                         height="100%"
                                         width="100%"
                                         bgColor="rgba(255, 255, 255, 0.1)"
@@ -261,12 +261,12 @@ function ProfileInvestorFirst({ pageSet }) {
                                                 borderColor: "white"
                                             }}
                                         >
-                                            {selectedIndustries.length === 0 ? (
+                                            {SelectedIndustries.length === 0 ? (
                                                 <Text color="rgba(255, 255, 255, 0.6)" fontSize="14px">
                                                     Fintech, SaaS, etc.
                                                 </Text>
                                             ) : (
-                                                selectedIndustries.map((industry) => (
+                                                SelectedIndustries.map((industry) => (
                                                     <Box
                                                         key={industry}
                                                         display="flex"
@@ -342,9 +342,9 @@ function ProfileInvestorFirst({ pageSet }) {
                                                             display="flex"
                                                             alignItems="center"
                                                             justifyContent="center"
-                                                            bg={selectedIndustries.includes(industry) ? "#E5C48A" : "transparent"}
+                                                            bg={SelectedIndustries.includes(industry) ? "#E5C48A" : "transparent"}
                                                         >
-                                                            {selectedIndustries.includes(industry) && (
+                                                            {SelectedIndustries.includes(industry) && (
                                                                 <Text color="#011F3C" fontSize="10px" fontWeight="bold">
                                                                     ✓
                                                                 </Text>
@@ -389,12 +389,12 @@ function ProfileInvestorFirst({ pageSet }) {
                                                 borderColor: "white"
                                             }}
                                         >
-                                            {selectedStages.length === 0 ? (
+                                            {SelectedStages.length === 0 ? (
                                                 <Text color="rgba(255, 255, 255, 0.6)" fontSize="14px">
                                                     Pre-seed, Seed, Series A
                                                 </Text>
                                             ) : (
-                                                selectedStages.map((stage) => (
+                                                SelectedStages.map((stage) => (
                                                     <Box
                                                         key={stage}
                                                         display="flex"
@@ -470,9 +470,9 @@ function ProfileInvestorFirst({ pageSet }) {
                                                             display="flex"
                                                             alignItems="center"
                                                             justifyContent="center"
-                                                            bg={selectedStages.includes(stage) ? "#E5C48A" : "transparent"}
+                                                            bg={SelectedStages.includes(stage) ? "#E5C48A" : "transparent"}
                                                         >
-                                                            {selectedStages.includes(stage) && (
+                                                            {SelectedStages.includes(stage) && (
                                                                 <Text color="#011F3C" fontSize="10px" fontWeight="bold">
                                                                     ✓
                                                                 </Text>
@@ -495,10 +495,10 @@ function ProfileInvestorFirst({ pageSet }) {
                                     </Field.Label>
                                     <Input
                                         placeholder="e.g. India, Southeast Asia"
-                                        value={ilocation}
+                                        value={InvestorLocation}
                                         onChange={(e) => {
                                             const value = e.target.value;
-                                            setIlocation(value);
+                                            setInvestorLocation(value);
                                         }}
                                         height="100%"
                                         width="90%"
@@ -519,8 +519,8 @@ function ProfileInvestorFirst({ pageSet }) {
                                     </Field.Label>
                                     <Input
                                         placeholder="e.g. https://alphaventures.com"
-                                        value={ihandle}
-                                        onChange={(e) => setIhandle(e.target.value)}
+                                        value={InvestorSocialMedia}
+                                        onChange={(e) => setInvestorSocialMedia(e.target.value)}
                                         height="100%"
                                         width="100%"
                                         bgColor="rgba(255, 255, 255, 0.1)"
