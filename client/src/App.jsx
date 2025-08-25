@@ -12,10 +12,11 @@ import ProfileStartupFirst from './pages/profilestartup_first'
 import ProfileInvestorFirst from './pages/profileinvestor_first'
 import ProfileStartupSecond from './pages/profilestartup_second'
 import ProfileInvestorSecond from './pages/profileinvestor_second'
+import StartMatchingPage from './pages/startmatching'
 
 
 function App() {
-const [page, setPage] = useState(8)
+const [page, setPage] = useState(11)
 console.log("Current page:", page);
   return (
    <Box className='mainContainer'>
@@ -35,6 +36,7 @@ console.log("Current page:", page);
              page===7 ? <ProfileInvestorSecond pageSet={setPage}/> :
              page===8 ? <HomePage pageSet={setPage} currentPage={page}/> :
              page===9 ? <AboutPage pageSet={setPage} currentPage={page}/> :
+             page===11 ? <StartMatchingPage pageSet={setPage} currentPage={page}/> :
              <></>
         }
       </Box>
