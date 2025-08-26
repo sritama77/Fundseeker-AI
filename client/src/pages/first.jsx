@@ -1,7 +1,19 @@
 
 import { Box, Flex, Image, Text, Button, Menu, Portal } from "@chakra-ui/react";
+import { useEffect } from "react";
+
 
 function FirstPage({ pageSet }) {
+ 
+
+  useEffect(() => {
+    const temp = localStorage.getItem("token")
+    console.log(temp)
+    temp !== null ? pageSet(11) : null
+    
+  }, [])
+
+
   return (
     <Box position={"relative"}
       height="100%"

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState,useEffect } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import HomePage from './pages/home'
@@ -15,8 +15,16 @@ import ProfileInvestorSecond from './pages/profileinvestor_second'
 import StartMatchingPage from './pages/startmatching'
 
 
+
 function App() {
-const [page, setPage] = useState(11)
+const [page, setPage] = useState(8)
+const [token,setToken] = useState(null)
+
+useEffect(()=>{
+const temp = localStorage.getItem("token")
+temp === null ? setToken(null) : setToken(temp)
+
+},[])
 console.log("Current page:", page);
   return (
    <Box className='mainContainer'>
@@ -25,7 +33,7 @@ console.log("Current page:", page);
     width={"100%"}
     display={"flex"}
       >
-        {
+        {  
           page === 0? <FirstPage pageSet={setPage} /> :
            page===1 ? <SignupStartup pageSet={setPage} /> :
             page===2 ? <SignupInvestor pageSet={setPage}/> :
@@ -37,6 +45,7 @@ console.log("Current page:", page);
              page===8 ? <HomePage pageSet={setPage} currentPage={page}/> :
              page===9 ? <AboutPage pageSet={setPage} currentPage={page}/> :
              page===11 ? <StartMatchingPage pageSet={setPage} currentPage={page}/> :
+
              <></>
         }
       </Box>

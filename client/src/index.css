@@ -12,3 +12,23 @@
 .usePoppins{
   font-family: "Poppins";
 }
+
+  .logout {
+    background-color: #CF1818;
+    color: white;
+    /* margin-top: auto; */
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 10px;
+    transition: all 0.3s ease-in-out;
+  }
+
+  .logout:hover {
+    background-color: #B91515;
+    transform: translateZ(20px) scale(1.04);
+    box-shadow: 0 4px 12px rgba(207, 24, 24, 0.3);
+    transition: all 0.3s ease-in-out;
+  }

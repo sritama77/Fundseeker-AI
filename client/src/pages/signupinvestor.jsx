@@ -1,7 +1,7 @@
 "use client"
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText } from "@chakra-ui/react";
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import { User, Mail, KeyRound } from 'lucide-react';
 import { PasswordInput } from "../components/ui/password-input"
 import SignupInvestorStore from '../store/investorform';
@@ -11,7 +11,11 @@ function SignupInvestor({pageSet}) {
   // const [ConfirmPassword, setConfirmPassword] = useState("")
   // const [Username, setUsername] = useState("")
 const {Password, setPassword, ConfirmPassword, setConfirmPassword, Username, setUsername}= SignupInvestorStore()
+  useEffect(() => {
+    const temp = localStorage.getItem("token")
+    temp !== null ? pageSet(11) : null
 
+  }, [])
   return (
     <Box
       height="100%"

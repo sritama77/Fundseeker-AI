@@ -1,7 +1,7 @@
 "use client"
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText } from "@chakra-ui/react";
-import { useState } from "react"
+import { useState ,useEffect} from "react"
 import { Mail, KeyRound } from 'lucide-react';
 import { PasswordInput } from "../components/ui/password-input"
 import axios from 'axios';
@@ -9,6 +9,15 @@ import axios from 'axios';
 function LoginPage({ pageSet }) {
   const [Password, setPassword] = useState("")
   const [Email, setEmail] = useState("")
+
+
+  useEffect(() => {
+    const temp = localStorage.getItem("token")
+    temp !== null ? pageSet(11) : null
+
+  }, [])
+
+
 
   async function LoginHandler() {
 
@@ -28,6 +37,10 @@ function LoginPage({ pageSet }) {
       setTimeout(() => {
         pageSet(11)
       }, 1500)
+
+      const token = resInvestor?.data?.id ? resInvestor?.data?.id : resStartup?.data?.id
+
+      localStorage.setItem("token", token)
       return toast.success("Logged in Successfully")
     }
     else {

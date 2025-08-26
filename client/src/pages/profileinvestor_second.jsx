@@ -1,7 +1,7 @@
 "use client"
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText, Select, Textarea } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import SignupInvestorStore from '../store/investorform';
 import axios from 'axios';
 
@@ -112,6 +112,11 @@ const ticketTypeOptions = [
 // const removeTicketType = (typeToRemove) => {
 //     setTicketType(prev => prev.filter(type => type !== typeToRemove));
 // };
+    useEffect(() => {
+        const temp = localStorage.getItem("token")
+        temp !== null ? pageSet(11) : null
+
+    }, [])
 
 return (
     <Box

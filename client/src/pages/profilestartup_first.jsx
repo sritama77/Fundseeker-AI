@@ -1,7 +1,7 @@
 "use client"
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText, Select } from "@chakra-ui/react";
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import SignupStartupStore from "../store/startupform";
 
 function ProfileStartupFirst({ pageSet }) {
@@ -37,6 +37,11 @@ function ProfileStartupFirst({ pageSet }) {
     // const removeIndustry = (industryToRemove) => {
     //     setStartupIndustryCategories(prev => prev.filter(industry => industry !== industryToRemove));
     // };
+    useEffect(() => {
+        const temp = localStorage.getItem("token")
+        temp !== null ? pageSet(11) : null
+
+    }, [])
 
     return (
         <Box

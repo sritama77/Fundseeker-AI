@@ -1,7 +1,7 @@
 "use client"
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText, Select, Textarea } from "@chakra-ui/react";
-import { useState } from "react";
+import { useState ,useEffect} from "react";
 import SignupStartupStore from "../store/startupform";
 import axios from "axios"
 
@@ -62,7 +62,11 @@ function ProfileStartupSecond({ pageSet }) {
             return toast.error("Passwords should match.")
             
         }
+    useEffect(() => {
+        const temp = localStorage.getItem("token")
+        temp !== null ? pageSet(11) : null
 
+    }, [])
 
 
 

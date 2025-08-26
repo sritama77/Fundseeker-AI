@@ -88,7 +88,7 @@ const SideNavLink = ({ page, currentPage, handlePageSelect, children, isLogout =
     );
 };
 
-const SideNavbar = ({ currentPage, pageSet }) => {
+const SideNavbar = ({ currentPage, pageSet,LogoutRedirect }) => {
     const handlePageSelect = (pageNumber) => {
         if (pageSet) {
             pageSet(pageNumber);
@@ -169,27 +169,27 @@ const SideNavbar = ({ currentPage, pageSet }) => {
                 gap: "8px",
                 position: "relative"
             }}>
-                <SideNavLink page={11} currentPage={currentPage} handlePageSelect={handlePageSelect}>
+                <SideNavLink page={0} currentPage={currentPage} handlePageSelect={handlePageSelect}>
                     Start Matching
                 </SideNavLink>
                 
-                <SideNavLink page={12} currentPage={currentPage} handlePageSelect={handlePageSelect}>
+                <SideNavLink page={1} currentPage={currentPage} handlePageSelect={handlePageSelect}>
                     View Saved Database
                 </SideNavLink>
                 
-                <SideNavLink page={0} currentPage={currentPage} handlePageSelect={handlePageSelect}>
+                <SideNavLink page={2} currentPage={currentPage} handlePageSelect={handlePageSelect}>
                     Success Stories
                 </SideNavLink>
                 
-                <SideNavLink page={0} currentPage={currentPage} handlePageSelect={handlePageSelect}>
+                <SideNavLink page={3} currentPage={currentPage} handlePageSelect={handlePageSelect}>
                     Leaderboard
                 </SideNavLink>
                 
-                <SideNavLink page={0} currentPage={currentPage} handlePageSelect={handlePageSelect}>
+                <SideNavLink page={4} currentPage={currentPage} handlePageSelect={handlePageSelect}>
                     Notifications
                 </SideNavLink>
                 
-                <SideNavLink page={13} currentPage={currentPage} handlePageSelect={handlePageSelect}>
+                <SideNavLink page={5} currentPage={currentPage} handlePageSelect={handlePageSelect}>
                     View Profile
                 </SideNavLink>
                 
@@ -197,10 +197,15 @@ const SideNavbar = ({ currentPage, pageSet }) => {
                 <div style={{ flex: 1 }} />
                 
                 {/* Logout Button */}
-                <SideNavLink isLogout={true}>
+                <button className='logout' onClick={()=>{
+                    localStorage.removeItem("token")
+                    LogoutRedirect(0)
+                }}>
                     <LogOut size={18} />
-                    Logout
-                </SideNavLink>
+                    LOGOUT
+                </button>
+                    
+               
             </div>
         </div>
     );

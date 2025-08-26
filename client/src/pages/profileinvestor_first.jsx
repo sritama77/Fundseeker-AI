@@ -3,7 +3,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText, Select } from "@chakra-ui/react";
 import { useState } from "react"
 import SignupInvestorStore from '../store/investorform';
-
+import { useEffect } from 'react';
 
 function ProfileInvestorFirst({ pageSet }) {
     // const [FirmName, setFirmName] = useState("");
@@ -73,6 +73,12 @@ function ProfileInvestorFirst({ pageSet }) {
     // const removeStage = (stageToRemove) => {
     //     setSelectedStages(prev => prev.filter(stage => stage !== stageToRemove));
     // };
+
+    useEffect(() => {
+        const temp = localStorage.getItem("token")
+        temp !== null ? pageSet(11) : null
+
+    }, [])
 
     return (
         <Box
