@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { CircleUserRound, Search, BarChart3, Puzzle, MessageSquare, Check, CircleSmall, PencilLine, WandSparkles, Handshake } from 'lucide-react';
 import SideNavbar from "../components/ui/sidenavbar";
 import ViewDatabaseComponent from "../components/ui/viewdatabase"
+import AnalysedTableComponent from "../components/ui/analysedtable"
 
 function StartMatchingPage({ pageSet, currentPage }) {
     const [ToggleComponent, setToggleComponent] = useState(0)
@@ -199,7 +200,7 @@ function StartMatchingPage({ pageSet, currentPage }) {
 
 
 
-                    </> : <Text>analysed table here</Text>) : ToggleComponent === 1 ? <ViewDatabaseComponent /> : null}
+                    </> : <AnalysedTableComponent />) : ToggleComponent === 1 ? <ViewDatabaseComponent /> : null}
                 </Box>
             </Box>
 

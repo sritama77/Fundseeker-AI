@@ -17,7 +17,7 @@ import StartMatchingPage from './pages/startmatching'
 
 
 function App() {
-const [page, setPage] = useState(11)
+const [page, setPage] = useState(8)
 const [token,setToken] = useState(null)
 
 useEffect(()=>{
