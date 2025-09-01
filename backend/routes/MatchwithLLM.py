@@ -352,8 +352,8 @@ def LLM():
 
     # --- 8. MONGODB OPERATIONS ---
     # saving the startup-investor match pairs to database ----------
-    def save_match_to_db(matches_collection, startup_id: str, investor_id: str, 
-                        overall_score: float, scorecard: Dict[str, Any], 
+    def save_match_to_db(matches_collection, startup_id: str, overall_score: float,scorecard: Dict[str, Any],investor_id: str,
+                        investor_email:str="",investor_location:str="",investor_company:str="",investor_title:str="",
                         startup_name: str = "", investor_name: str = ""):
         """Save match result to MongoDB matches collection."""
         
@@ -362,6 +362,9 @@ def LLM():
             "investor_id": investor_id,
             "startup_name": startup_name,
             "investor_name": investor_name,
+            "investor_company":investor_company,
+            "investor_email":investor_email,
+            "investor_location":investor_location,
             "overall_score": overall_score,
             "scorecard": scorecard,
             "created_at": datetime.utcnow(),
@@ -537,7 +540,7 @@ def LLM():
         
         finally:
             if client:
-                client.close()
+                pass
 
 
     # --- 10. QUERY FUNCTIONS ---
@@ -568,7 +571,7 @@ def LLM():
                 return matches
             
             finally:
-                client.close()
+                pass
 
 
     def get_top_matches_for_investor(investor_id: str, top_k: int = 10):
@@ -599,7 +602,7 @@ def LLM():
         
         finally:
             if client:
-                client.close()
+                pass
 
 
     # --- 11. DEMO FUNCTION ---
@@ -644,7 +647,7 @@ def LLM():
             print(f"Error {e}")
         finally:
             if client:
-                client.close()
+                pass
 
     def create_matches():
         startup_collection, investor_collection, matches_collection, client = get_database_collections()
@@ -665,26 +668,38 @@ def LLM():
             startup_name = Startup.get("StartupName", "Unknown Startup")
             result = []
             for investor in investors:                
-                investor_name = investor.get("Name", investor.get("FirmName", "Unknown Investor"))
+                investor_name = investor.get("Name", investor.get("Username", "Unknown Investor"))
                 # print(f"🚀 Running Demo Analysis: {startup_name} x {investor_name}")
-                overall_score, scorecard = analyze_startup_investor_match(Startup, investor)                    
+                overall_score, scorecard = analyze_startup_investor_match(Startup, investor)                     
                 investor_id = str(investor.get("_id", "demo_investor"))
-                save_match_to_db(matches_collection, startup_id, investor_id, 
-                                overall_score, scorecard, startup_name, investor_name)
-                result.append({"Start Name":startup_name,
-                        "Investor Name":investor_name,
-                        "Overall Score":overall_score,
+                inv_email=str(investor.get("CompanyEmail","Not Available"))
+                inv_company=str(investor.get("FirmName","Unknown Company"))
+                investor_location=str(investor.get("InvestorLocation","__"))
+                investor_title=""
+                save_match_to_db(matches_collection, startup_id, overall_score, scorecard, investor_id=investor_id,
+                                investor_email=inv_email,investor_location=investor_location, investor_company=inv_company,                              
+                                investor_title=investor_title,  startup_name=startup_name, investor_name=investor_name)
+                        #         (matches_collection, startup_id: str, overall_score: float,scorecard: Dict[str, Any],investor_id: str,
+                        # investor_email:str="",investor_location:str="",investor_company:str="",investor_title:str="",
+                        # startup_name: str = "", investor_name: str = "")
+                result.append({"Start_Name":startup_name,
+                        "Investor_Name":investor_name,
+                        "Investor_Company":inv_company,
+                        "Investor_Email":inv_email,
+                        "Investor_Location":investor_location,
+                        "Investor_Title":investor_title,
+                        "Overall_Score":overall_score,
                         "Scorecard":scorecard})
-            return jsonify(result)                
+            return jsonify({"Success":True,"result":result})                
                 # print(f"\nResult:")
                 # print(f"Overall score = {overall_score}")
                 # print("Explanation")
                 # print(json.dumps(scorecard, indent=2))
         except Exception as e:
-            return jsonify({"message":"bhogoban"})
+            return jsonify({"message":f"bhogoban{e}"})
         finally:
             if client:
-                client.close()
+                pass
 
 # --- 12. MAIN EXECUTION ---
     # if __name__ == "__main__":

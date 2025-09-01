@@ -10,7 +10,7 @@ function SignupInvestor({pageSet}) {
   // const [Password, setPassword] = useState("")
   // const [ConfirmPassword, setConfirmPassword] = useState("")
   // const [Username, setUsername] = useState("")
-const {Password, setPassword, ConfirmPassword, setConfirmPassword, Username, setUsername}= SignupInvestorStore()
+const {Password, setPassword, ConfirmPassword, setConfirmPassword, Username, setUsername, CompanyEmail, setCompanyEmail}= SignupInvestorStore()
   useEffect(() => {
     const temp = localStorage.getItem("token")
     temp !== null ? pageSet(11) : null
@@ -162,7 +162,9 @@ const {Password, setPassword, ConfirmPassword, setConfirmPassword, Username, set
                 color={"white"}
                 fontFamily={"Poppins"}
                 placeholder='Firm Email'
-                border={"1px solid #FFF"} /></InputGroup>
+                border={"1px solid #FFF"}
+                onChange={(e)=>setCompanyEmail(e.target.value)}
+                /></InputGroup>
 
 
             <InputGroup startElement={<KeyRound color="white" />}        // Password input

@@ -32,3 +32,22 @@
     box-shadow: 0 4px 12px rgba(207, 24, 24, 0.3);
     transition: all 0.3s ease-in-out;
   }
+
+/* Thin Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: grey;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: grey;
+        }

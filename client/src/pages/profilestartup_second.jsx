@@ -68,10 +68,6 @@ function ProfileStartupSecond({ pageSet }) {
 
     }, [])
 
-
-
-
-
     return (
         <Box
             height={"100%"}

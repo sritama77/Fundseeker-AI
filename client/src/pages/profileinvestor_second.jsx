@@ -17,7 +17,8 @@ function ProfileInvestorSecond({ pageSet }) {
     const { CheckSizeRange, setCheckSizeRange, BioThesis, setBioThesis, SyndicationPreference, setSyndicationPreference,
         TicketType, setTicketType, FirmName, setFirmName, InvestorWebsite, setInvestorWebsite, InvestorLocation, setInvestorLocation,
         InvestorSocialMedia, setInvestorSocialMedia, SelectedIndustries, setSelectedIndustries, SelectedStages, setSelectedStages,
-        Password, setPassword, ConfirmPassword, setConfirmPassword, Username, setUsername, handleCheckSizeToggle, removeCheckSize, handleTicketTypeToggle, removeTicketType
+        Password, setPassword, ConfirmPassword, setConfirmPassword, Username, setUsername, handleCheckSizeToggle, removeCheckSize, handleTicketTypeToggle, removeTicketType,
+        CompanyEmail, setCompanyEmail
     } = SignupInvestorStore()
 
     async function InvestorSignupHandler() {
@@ -25,6 +26,7 @@ function ProfileInvestorSecond({ pageSet }) {
            const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/signupinvestor`, {
 
                "Username": Username,
+               "CompanyEmail":CompanyEmail,
                "Password": Password,
                "ConfirmPassword": ConfirmPassword,
                "FirmName": FirmName,

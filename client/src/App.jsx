@@ -13,18 +13,35 @@ import ProfileInvestorFirst from './pages/profileinvestor_first'
 import ProfileStartupSecond from './pages/profilestartup_second'
 import ProfileInvestorSecond from './pages/profileinvestor_second'
 import StartMatchingPage from './pages/startmatching'
-
-
-
+import UserDetails from './store/userform'
+import  axios from "axios"
 function App() {
 const [page, setPage] = useState(8)
 const [token,setToken] = useState(null)
+const  {user,setUser} = UserDetails()
+
+async function getUserDetails(token){
+
+  if(token){
+    const startupres = await axios.post(`${import.meta.env.VITE_SERVER_URL}/userdetailsstartup`, {
+      "token": token
+    })
+
+    const investorres = await axios.post(`${import.meta.env.VITE_SERVER_URL}/userdetailsinvestor`, {
+      "token": token
+    })
+     console.log(startupres,investorres)
+    startupres?.data?.message === "user not found" ? setUser(investorres?.data?.message) : setUser(startupres?.data?.message)
+  }
+}
+
 
 useEffect(()=>{
 const temp = localStorage.getItem("token")
 temp === null ? setToken(null) : setToken(temp)
-
+getUserDetails(temp)
 },[])
+
 console.log("Current page:", page);
   return (
    <Box className='mainContainer'>

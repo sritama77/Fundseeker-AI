@@ -12,6 +12,6 @@ def LoginInvestor():
     result = investor_collection.find_one({"CompanyEmail":data["Email"]})
     if result:
         if result["Password"] == data["Password"]:
-            return jsonify({"message":"success","id":str(result["id"])})
+            return jsonify({"message":"success","id":str(result["_id"])})
     else:
         return jsonify({"message":"wrong email or pass"})  

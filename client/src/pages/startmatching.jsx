@@ -6,6 +6,7 @@ import { CircleUserRound, Search, BarChart3, Puzzle, MessageSquare, Check, Circl
 import SideNavbar from "../components/ui/sidenavbar";
 import ViewDatabaseComponent from "../components/ui/viewdatabase"
 import AnalysedTableComponent from "../components/ui/analysedtable"
+import ViewStartupProfileComponent from "../components/ui/startup_profileinfo"
 
 function StartMatchingPage({ pageSet, currentPage }) {
     const [ToggleComponent, setToggleComponent] = useState(0)
@@ -35,172 +36,199 @@ function StartMatchingPage({ pageSet, currentPage }) {
                 alignItems={"center"}
                 flexDirection={"row"}
                 //bgColor={"white"}
-                gap={8}
+                gap={12}
             >
                 <Box
-                    height={"70%"}
-                    width={"70%"}
+                    height={"80%"}
+                    width={"90%"}
                     display={"flex"}
                     justifyContent={"center"}
                     alignItems={"center"}
                     flexDirection={"row"}
                     bgColor={"white"}
                     borderRadius={"20px"}
-                    gap={10}
+                    gap={8}
                 >
                     {ToggleComponent === 0 ? (StartMatching !== true ? <>
                         <Box
                             height={"90%"}
-                            width={"80%"}
+                            width={"90%"}
                             display={"flex"}
                             justifyContent={"center"}
                             alignItems={"left"}
-                            flexDirection={"column"}
+                            flexDirection={"row"}
                             //bgColor={"red"}
-                            gap={3}
+                            gap={10}
                         >
-                            <Text
-                                fontFamily={"Poppins"}
-                                color="#001B60"
-                                fontSize="25px"
-                                fontWeight={600}
-                                textAlign={"left"}
-                            >Smart Matching Starts Here!</Text>
-                            <Text
-                                fontFamily={"Poppins"}
-                                color="black"
-                                fontSize="14px"
-                                fontWeight={400}
-                                textAlign={"left"}
-                                fontStyle="italic"
-                            >Get AI-driven recommendations tailored to your goals. Whether you're a startup seeking funding or an investor looking for the next big opportunity, we've got you covered.
-                            </Text>
                             <Box
-                                height={"50%"}
-                                width={"100%"}
-                                display={"flex"}
-                                justifyContent={"center"}
+                                height="100%"
+                                width="60%"
+                                display="flex"
+                                flexDirection="column"
+                                gap={8}
+                                //bg="pink"
                                 alignItems={"left"}
-                                flexDirection={"column"}
-                                //bgColor={"blue"}
-                                gap={1}
+                                justifyContent={"center"}
                             >
+                                <Text
+                                    fontFamily={"Poppins"}
+                                    color="#001B60"
+                                    fontSize="27px"
+                                    fontWeight={600}
+                                    textAlign={"left"}
+                                >Smart Matching Starts Here!</Text>
                                 <Text
                                     fontFamily={"Poppins"}
                                     color="black"
                                     fontSize="16px"
-                                    fontWeight={500}
+                                    fontWeight={400}
                                     textAlign={"left"}
-                                >Steps:
+                                    fontStyle="italic"
+                                >Get AI-driven recommendations tailored to your goals. Whether you're a startup seeking funding or an investor looking for the next big opportunity, we've got you covered.
                                 </Text>
                                 <Box
-                                    height={"20%"}
+                                    height={"50%"}
                                     width={"100%"}
                                     display={"flex"}
-                                    justifyContent={"left"}
-                                    alignItems={"center"}
-                                    flexDirection={"row"}
-                                    //bgColor={"pink"}
-                                    gap={3}
-                                    paddingLeft={2}
+                                    justifyContent={"center"}
+                                    alignItems={"left"}
+                                    flexDirection={"column"}
+                                    //bgColor={"blue"}
+                                    gap={1}
                                 >
-                                    <PencilLine
-                                        size={15}
-                                        color="#001B60"
-                                        strokeWidth={2}
-                                    />
                                     <Text
                                         fontFamily={"Poppins"}
                                         color="black"
-                                        fontSize="14px"
-                                        fontWeight={400}
+                                        fontSize="22px"
+                                        fontWeight={500}
                                         textAlign={"left"}
-                                    >Make sure your profile details are correct & complete.
+                                    >Steps:
                                     </Text>
-                                </Box>
-                                <Box
-                                    height={"20%"}
-                                    width={"100%"}
-                                    display={"flex"}
-                                    justifyContent={"left"}
-                                    alignItems={"center"}
-                                    flexDirection={"row"}
-                                    //bgColor={"pink"}
-                                    gap={3}
-                                    paddingLeft={2}
-                                >
-                                    <WandSparkles
-                                        size={15}
-                                        color="#001B60"
-                                        strokeWidth={2}
-                                    />
-                                    <Text
-                                        fontFamily={"Poppins"}
-                                        color="black"
-                                        fontSize="14px"
-                                        fontWeight={400}
-                                        textAlign={"left"}
-                                    >"Start Matching" to generate matches with just a click.
-                                    </Text>
-                                </Box>
-                                <Box
-                                    height={"20%"}
-                                    width={"100%"}
-                                    display={"flex"}
-                                    justifyContent={"left"}
-                                    alignItems={"center"}
-                                    flexDirection={"row"}
-                                    //bgColor={"pink"}
-                                    gap={3}
-                                    paddingLeft={2}
-                                >
-                                    <Handshake
-                                        size={15}
-                                        color="#001B60"
-                                        strokeWidth={2}
-                                    />
-                                    <Text
-                                        fontFamily={"Poppins"}
-                                        color="black"
-                                        fontSize="14px"
-                                        fontWeight={400}
-                                        textAlign={"left"}
-                                    >Explore, Review & Connect instantly.
-                                    </Text>
+                                    <Box
+                                        height={"20%"}
+                                        width={"100%"}
+                                        display={"flex"}
+                                        justifyContent={"left"}
+                                        alignItems={"center"}
+                                        flexDirection={"row"}
+                                        //bgColor={"pink"}
+                                        gap={3}
+                                        paddingLeft={2}
+                                    >
+                                        <PencilLine
+                                            size={20}
+                                            color="#001B60"
+                                            strokeWidth={2}
+                                        />
+                                        <Text
+                                            fontFamily={"Poppins"}
+                                            color="black"
+                                            fontSize="18px"
+                                            fontWeight={400}
+                                            textAlign={"left"}
+                                        >Make sure your profile details are correct & complete.
+                                        </Text>
+                                    </Box>
+                                    <Box
+                                        height={"20%"}
+                                        width={"100%"}
+                                        display={"flex"}
+                                        justifyContent={"left"}
+                                        alignItems={"center"}
+                                        flexDirection={"row"}
+                                        //bgColor={"pink"}
+                                        gap={3}
+                                        paddingLeft={2}
+                                    >
+                                        <WandSparkles
+                                            size={20}
+                                            color="#001B60"
+                                            strokeWidth={2}
+                                        />
+                                        <Text
+                                            fontFamily={"Poppins"}
+                                            color="black"
+                                            fontSize="18px"
+                                            fontWeight={400}
+                                            textAlign={"left"}
+                                        >"Start Matching" to generate matches with just a click.
+                                        </Text>
+                                    </Box>
+                                    <Box
+                                        height={"20%"}
+                                        width={"100%"}
+                                        display={"flex"}
+                                        justifyContent={"left"}
+                                        alignItems={"center"}
+                                        flexDirection={"row"}
+                                        //bgColor={"pink"}
+                                        gap={3}
+                                        paddingLeft={2}
+                                    >
+                                        <Handshake
+                                            size={20}
+                                            color="#001B60"
+                                            strokeWidth={2}
+                                        />
+                                        <Text
+                                            fontFamily={"Poppins"}
+                                            color="black"
+                                            fontSize="18px"
+                                            fontWeight={400}
+                                            textAlign={"left"}
+                                        >Explore, Review & Connect instantly.
+                                        </Text>
+                                    </Box>
+                                    <Box
+                                        height={"30%"}
+                                        width={"100%"}
+                                        display={"flex"}
+                                        justifyContent={"center"}
+                                        alignItems={"center"}
+                                        flexDirection={"column"}
+                                        //bgColor={"blue"}
+                                        gap={3}
+                                    >
+                                        <Button                                               // button
+                                            width={"350px"}
+                                            height={"50px"}
+                                            backgroundColor={"#004ECA"}
+                                            color={"white"}
+                                            borderRadius={"10px"}
+                                            fontFamily={"Poppins"}
+                                            display={"flex"}
+                                            justifyContent={"center"}
+                                            alignContent={"center"}
+                                            fontSize={"16px"}
+                                            onClick={() => setStartMatching(true)}
+
+                                            _hover={{
+                                                backgroundColor: "#E5C48A",
+                                                color: "#011F3C",
+                                            }}
+                                            transition="all 0.5s ease">Start Matching</Button></Box>
                                 </Box>
                             </Box>
                             <Box
-                                height={"20%"}
-                                width={"100%"}
-                                display={"flex"}
-                                justifyContent={"center"}
-                                alignItems={"center"}
-                                flexDirection={"column"}
-                                //bgColor={"blue"}
-                                gap={3}
+                                height="100%"
+                                width="40%"
+                                display="flex"
+                                flexDirection="column"
+                                gap={8}
+                                //bg="blue"
+                                borderRadius={"15px"}
                             >
-                            <Button                                               // button
-                                width={"300px"}
-                                backgroundColor={"#004ECA"}
-                                color={"white"}
-                                borderRadius={"10px"}
-                                fontFamily={"Poppins"}
-                                display={"flex"}
-                                justifyContent={"center"}
-                                alignContent={"center"}
-                                fontSize={"16px"}
-                                onClick={() => setStartMatching(true)}
-
-                                _hover={{
-                                    backgroundColor: "#E5C48A",
-                                    color: "#011F3C",
-                                }}
-                                transition="all 0.5s ease">Start Matching</Button></Box>
+                                <Image height={"100%"}
+                                    width={"auto"}
+                                    display={"flex"}
+                                    borderRadius={"15px"}
+                                    src="/businessmeet.jpg" />
+                            </Box>
                         </Box>
 
 
 
-                    </> : <AnalysedTableComponent />) : ToggleComponent === 1 ? <ViewDatabaseComponent /> : null}
+                    </> : <AnalysedTableComponent />) : (ToggleComponent === 1 ? <ViewDatabaseComponent /> : ToggleComponent === 5 ? <ViewStartupProfileComponent/> : null)}
                 </Box>
             </Box>
 
