@@ -11,11 +11,38 @@ function SignupInvestor({pageSet}) {
   // const [ConfirmPassword, setConfirmPassword] = useState("")
   // const [Username, setUsername] = useState("")
 const {Password, setPassword, ConfirmPassword, setConfirmPassword, Username, setUsername, CompanyEmail, setCompanyEmail}= SignupInvestorStore()
+const [isEmailValid, setIsEmailValid] = useState(true)
+
   useEffect(() => {
     const temp = localStorage.getItem("token")
     temp !== null ? pageSet(11) : null
 
   }, [])
+
+  const validateEmail = (email) => {
+    return email.includes("@gmail.com")
+  }
+
+  const handleNextClick = () => {
+    if (!Username.trim()) {
+      return toast.error("Please enter Full Name")
+    }
+    if (!validateEmail(CompanyEmail)) {
+      return toast.error("Enter a valid email")
+    }
+    if (!Password.trim()) {
+      return toast.error("Please enter Password")
+    }
+    if (!ConfirmPassword.trim()) {
+      return toast.error("Please confirm Password")
+    }
+    if (Password !== ConfirmPassword) {
+      return toast.error("Passwords do not match")
+    }
+
+    pageSet(5)
+  }
+
   return (
     <Box
       height="100%"
@@ -134,16 +161,13 @@ const {Password, setPassword, ConfirmPassword, setConfirmPassword, Username, set
                 fontFamily={"Poppins"}
                 placeholder='Full Name'
                 border={"1px solid #FFF"}
+                value={Username}
                 onChange={
                   (e) => {
                     const value = e.target.value;
                     const onlyLetters = /^[A-Za-z\s]+$/.test(value);
-                    toast.dismiss();
                     if (onlyLetters || value === "") {
                       setUsername(value);
-                    } else {
-                      toast.error("Full name should only contain letters.");
-
                     }
                   }
                 }
@@ -162,8 +186,13 @@ const {Password, setPassword, ConfirmPassword, setConfirmPassword, Username, set
                 color={"white"}
                 fontFamily={"Poppins"}
                 placeholder='Firm Email'
-                border={"1px solid #FFF"}
-                onChange={(e)=>setCompanyEmail(e.target.value)}
+                border={isEmailValid ? "1px solid #FFF" : "1px solid red"}
+                value={CompanyEmail}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setCompanyEmail(value);
+                  setIsEmailValid(validateEmail(value) || value === "");
+                }}
                 /></InputGroup>
 
 
@@ -205,7 +234,7 @@ const {Password, setPassword, ConfirmPassword, setConfirmPassword, Username, set
             </InputGroup>
 
             <Button                                               //next button
-            onClick={() => { pageSet(5) }}
+            onClick={handleNextClick}
               width="200px"
               color="#011F3C"
               borderRadius={"10px"}

@@ -22,6 +22,26 @@ function ProfileStartupSecond({ pageSet }) {
   
 
         async function StartUpSignupHandler(){
+            // Validate all fields before proceeding
+            if (!BriefPitch.trim()) {
+                return toast.error("Please enter Brief Pitch")
+            }
+            if (!ProblemStatement.trim()) {
+                return toast.error("Please enter Problem Statement")
+            }
+            if (!Solution.trim()) {
+                return toast.error("Please enter Solution")
+            }
+            if (!BusinessModel.trim()) {
+                return toast.error("Please enter Business Model")
+            }
+            if (!ElevatorPitch.trim()) {
+                return toast.error("Please enter Elevator Pitch")
+            }
+            if (!Competitors.trim()) {
+                return toast.error("Please enter Competitors & Differentiation")
+            }
+
             if(Password === ConfirmPassword){
                 const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/signupstartup`, {
                     "StartupName": StartupName,

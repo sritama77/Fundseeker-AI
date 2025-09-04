@@ -3,13 +3,11 @@ import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, F
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { CirclePlus } from 'lucide-react';
-
+import AnalyzedTableStore from "../../store/analyze";
 
 function AnalysedTableComponent({ pageSet, currentPage }) {
-    const [userid, setUserid] = useState(null)
-    const [isMatched, setIsMatched] = useState(false)
-    const [AnalysedMatch, setAnalysedMatch] = useState([])
-
+    const { userid, setUserid, isMatched, setIsMatched, AnalysedMatch, setAnalysedMatch ,refresh, setRefresh } = AnalyzedTableStore()
+    
     useEffect(() => {
         const token = localStorage.getItem("token")
         token ? setUserid(token) : setUserid(null)
@@ -32,10 +30,11 @@ function AnalysedTableComponent({ pageSet, currentPage }) {
 
 
     useEffect(() => {
-        if (userid) {
+        if (userid && refresh) {
             AnalayseModelHandler()
+            setRefresh(false)
         }
-    }, [userid])
+    }, [userid,refresh])
 
 
     return (

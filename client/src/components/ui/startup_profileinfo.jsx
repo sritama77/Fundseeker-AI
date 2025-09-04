@@ -3,28 +3,21 @@ import toast, { Toaster } from 'react-hot-toast';
 import {
   Box,
   Flex,
-  Image,
   Text,
   Button,
   Link,
-  Stack,
-  Tag,
-  Wrap,
-  WrapItem
+  Stack
 } from "@chakra-ui/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import SignupStartupStore from "../../store/startupform";
 import UserDetails from '../../store/userform';
 
-function ViewStartupProfileComponent({ pageSet, currentPage }) {
-const  {user,setUser} = UserDetails()
+function ViewProfileComponent({ pageSet, currentPage }) {
+  const { user, setUser } = UserDetails();
+  const [isHovered, setIsHovered] = useState(false);
 
   useEffect(() => {
-    // optional: give gentle toast if profile is missing
-    if (!user) {
-      //toast("No profile loaded — complete your profile from Signup flow.");
-    }
-    console.log(user)
+    console.log(user);
   }, [user]);
 
   return (
@@ -44,7 +37,7 @@ const  {user,setUser} = UserDetails()
         fontWeight={600}
         textAlign={"left"}
       >
-        Your startup profile
+        Your profile
       </Text>
 
       {/* WHITE CARD (scrollable) */}
@@ -57,229 +50,313 @@ const  {user,setUser} = UserDetails()
         bg="white"
         p={6}
       >
-        {/* Header */}
-        <Flex align="center" justify="space-between" mb={4} gap={4}>
+        {/* Header with company name and edit button */}
+        <Flex align="center" justify="space-between" mb={6}>
           <Box>
             <Text fontSize="2xl" fontWeight={700} color="#011F3C">
-              {user?.StartupName || user?.Username || "— Startup name not provided —"}
+              {user?.StartupName || user?.Username || user?.FirmName || "— Company name not provided —"}
             </Text>
-            {user?.BriefPitch && (
+            {(user?.BriefPitch || user?.BioThesis) && (
               <Text fontSize="sm" color="gray.600" fontStyle="italic" mt={1}>
                 {user?.BriefPitch || user?.BioThesis}
               </Text>
             )}
           </Box>
 
-          <Flex gap={3} align="center">
-            <Button
-              size="sm"
-              colorScheme="blue"
-              variant="outline"
-              onClick={() => {
-                // take user to edit flow - change the pageSet index to the edit page id you use
-                // if you don't have an edit flow mapped, replace with a modal or custom handler
-                if (typeof pageSet === "function") pageSet(6); // adjust index if needed
-                else toast('Edit action not wired');
-              }}
-            >
-              Edit Profile
-            </Button>
-
-            {/* <Button
-              size="sm"
-              colorScheme="blue"
-              onClick={() => {
-                // Example: open pitch deck in new tab if present
-                if (user?.pitch_deck_url) window.open(user?.pitch_deck_url, "_blank");
-                else toast.error("No pitch deck uploaded");
-              }}
-            >
-              View Pitch Deck
-            </Button> */}
-          </Flex>
+          <Button
+            size="md"
+            bg="white"
+            border="2px solid"
+            borderColor="black"
+            color="black"
+            _hover={{
+              bg: "#001B60",
+              color: "white",
+              borderColor: "#001B60"
+            }}
+            onClick={() => {
+              if (typeof pageSet === "function") pageSet(6);
+              else toast('Edit action not wired');
+            }}
+            px={6}
+            py={2}
+            borderRadius="md"
+            fontWeight={500}
+          >
+            Edit Profile
+          </Button>
         </Flex>
 
-        <Box mb={4} />
-
-        {/* Grid-like two-column layout using Stack */}
-        <Stack direction={["column", "row"]} spacing={6} align="start">
-          {/* Left column - General & About */}
-          <Box flex="1" minW={["100%", "60%"]}>
+        {/* Two-column layout */}
+        <Flex direction={["column", "row"]} gap={8} align="start">
+          {/* Left Section */}
+          <Box flex="1" minW={["100%", "50%"]}>
             {/* General Info */}
-            <Text fontSize="lg" fontWeight={600} color="#033F79" mb={2}>
-              General Info
-            </Text>
-            <Stack spacing={2} mb={4}>
-              <Text><b>{user?.FounderName ? "Founder: ": "FirmName: " }</b> {user?.FounderName || user?.FirmName || "-"}</Text>
-              <Text><b>Email:</b> {user?.CompanyEmail || "-"}</Text>
-              <Text>
-                <b>Website:</b>{" "}
-                {user?.StartupWebsiteUrl ? (
-                  <Link href={user?.StartupWebsiteUrl} isExternal color="blue.600">
-                    {user?.StartupWebsiteUrl}
-                  </Link>
-                ) : (
-                    <Link href={user?.InvestorWebsite} isExternal color="blue.600">
-                      {user?.InvestorWebsite}
-                    </Link>
-                )}
+            <Box mb={6}>
+              <Text fontSize="lg" fontWeight={600} color="black" mb={3}>
+                General Info
               </Text>
-              <Text><b>Location:</b> {user?.Location || user?.InvestorLocation || "-"}</Text>
-              <Text>
-                <b>Social:</b>{" "}
-                {user?.SocialMediaLink ? (
-                  <Link href={user?.SocialMediaLink} isExternal color="blue.600">
-                    {user?.SocialMediaLink}
-                  </Link>
-                ) : (
-                    <Link href={user?.InvestorSocialMedia} isExternal color="blue.600">
-                      {user?.InvestorSocialMedia}
-                    </Link>
-                )}
-              </Text>
-              <Text><b>Stage:</b> {user?.CurrentStage || user?.SelectedStages?.map((items,index)=>
-              <Text key={index}>{items}</Text>
-              )}</Text>
+              <Stack spacing={3}>
+                <Box>
+                  <Text color="black" fontWeight={600} as="span">
+                    {user?.FounderName ? "Founder:" : "Firm Name:"}
+                  </Text>
+                  <Text as="span" ml={2}>
+                    {user?.FounderName || user?.FirmName || "-"}
+                  </Text>
+                </Box>
 
-              <Box>
-                <Text as="span" fontWeight="bold">Industry:</Text>{" "}
-                {Array.isArray(user?.StartupIndustryCategories) && user?.StartupIndustryCategories.length > 0 ? (
-                  <Wrap mt={2}>
-                    {user?.StartupIndustryCategories.map((cat, i) => (
-                      <Box key={i}>
-                        <Box size="sm" bg="#F3F6FF" color="#011F3C" borderRadius="md">
-                          {cat}
-                        </Box>  
-                      </Box>
-                    ))}
-                  </Wrap>
-                ) : (
-                    <Wrap mt={2}>
-                      {user?.SelectedIndustries?.map((cat, i) => (
-                        <Box key={i}>
-                          <Box size="sm" bg="#F3F6FF" color="#011F3C" borderRadius="md">
+                <Box>
+                  <Text color="black" fontWeight={600} as="span">Location:</Text>
+                  <Text as="span" ml={2}>
+                    {user?.Location || user?.InvestorLocation || "-"}
+                  </Text>
+                </Box>
+
+                <Box>
+                  <Text color="black" fontWeight={600} as="span">Stage:</Text>
+                  <Text as="span" ml={2}>
+                    {user?.CurrentStage || 
+                     (user?.SelectedStages?.length > 0 ? user?.SelectedStages.join(", ") : "-")}
+                  </Text>
+                </Box>
+
+                <Box>
+                  <Text color="black" fontWeight={600} mb={1}>Industry:</Text>
+                  <Box>
+                    {Array.isArray(user?.StartupIndustryCategories) && user?.StartupIndustryCategories.length > 0 ? (
+                      <Box display="flex" flexWrap="wrap" gap={2}>
+                        {user?.StartupIndustryCategories.map((cat, i) => (
+                          <Box 
+                            key={i}
+                            px={3}
+                            py={1}
+                            bg="#F3F6FF" 
+                            color="#011F3C" 
+                            borderRadius="md"
+                            fontSize="sm"
+                          >
                             {cat}
                           </Box>
-                        </Box>
-                      ))}
-                    </Wrap>
+                        ))}
+                      </Box>
+                    ) : Array.isArray(user?.SelectedIndustries) && user?.SelectedIndustries.length > 0 ? (
+                      <Box display="flex" flexWrap="wrap" gap={2}>
+                        {user?.SelectedIndustries.map((cat, i) => (
+                          <Box 
+                            key={i}
+                            px={3}
+                            py={1}
+                            bg="#F3F6FF" 
+                            color="#011F3C" 
+                            borderRadius="md"
+                            fontSize="sm"
+                          >
+                            {cat}
+                          </Box>
+                        ))}
+                      </Box>
+                    ) : (
+                      <Text>-</Text>
+                    )}
+                  </Box>
+                </Box>
+              </Stack>
+            </Box>
+
+            {/* About Section */}
+            <Box mb={6}>
+              <Text fontSize="lg" fontWeight={600} color="black" mb={3}>
+                About
+              </Text>
+              <Stack spacing={4}>
+                {user?.BriefPitch && (
+                  <Box>
+                    <Text color="black" fontWeight={600} mb={1}>Brief Pitch:</Text>
+                    <Text color="gray.700">{user?.BriefPitch}</Text>
+                  </Box>
                 )}
-              </Box>
-            </Stack>
 
-            <Box mb={4} />
+                {user?.ProblemStatement && (
+                  <Box>
+                    <Text color="black" fontWeight={600} mb={1}>Problem Statement:</Text>
+                    <Text color="gray.700">{user?.ProblemStatement}</Text>
+                  </Box>
+                )}
 
-            {/* About / Pitch Details */}
-            <Text fontSize="lg" fontWeight={600} color="#033F79" mb={2}>
-              About
-            </Text>
-            <Stack spacing={3} mb={4}>
-              <Box>
-                <Text fontSize="sm" color="gray.600"><b>{user?.ProblemStatement ? "Problem :" : "SyndicationPreference:"}</b></Text>
-                <Text mt={1}>{user?.ProblemStatement || user?.SyndicationPreference ||"-"}</Text>
-              </Box>
+                {user?.Solution && (
+                  <Box>
+                    <Text color="black" fontWeight={600} mb={1}>Solution:</Text>
+                    <Text color="gray.700">{user?.Solution}</Text>
+                  </Box>
+                )}
 
-              <Box>
-                <Text fontSize="sm" color="gray.600"><b>{user?.Solution ? "Solution:" : ""}</b></Text>
-                <Text mt={1}>{user?.Solution || ""}</Text>
-              </Box>
-
-              <Box>
-                <Text fontSize="sm" color="gray.600"><b>{user?.ElevatorPitch ? "Elevator Pitch: " : "Bio-Thesis: "}</b></Text>
-                <Text mt={1}>{user?.ElevatorPitch || user?.BioThesis || "-"}</Text>
-              </Box>
-            </Stack>
-
-            <Box mb={4} />
+                {user?.SyndicationPreference && (
+                  <Box>
+                    <Text color="black" fontWeight={600} mb={1}>Syndication Preference:</Text>
+                    <Text color="gray.700">{user?.SyndicationPreference}</Text>
+                  </Box>
+                )}
+              </Stack>
+            </Box>
 
             {/* Business Details */}
-            <Text fontSize="lg" fontWeight={600} color="#033F79" mb={2}>
-              Business Details
-            </Text>
-            <Stack spacing={3}>
-              <Box>
-                <Text fontSize="sm" color="gray.600"><b>{ user?.BusinessModel ? "Business Model:" : "Ranges"}</b></Text>
-                <Text mt={1}>{user?.BusinessModel || user?.CheckSizeRange?.map((items,index)=>
-                <Text key={index}>{items}</Text>)}</Text>
-              </Box>
-
-              <Box>
-                <Text fontSize="sm" color="gray.600"><b>Competitors & Differentiation:</b></Text>
-                <Text mt={1}>{user?.Competitors || user?.TicketType.map((items,index)=><Text key={index}>{items}</Text>)||"-"}</Text>
-              </Box>
-            </Stack>
-          </Box>
-
-          {/* Right column - Quick contact & actions */}
-          <Box flex="0 0 320px" minW="260px">
-            <Text fontSize="lg" fontWeight={600} color="#033F79" mb={2}>
-              Quick Actions
-            </Text>
-            <Stack spacing={3} mb={6}>
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  // trigger summary generation in your backend if you have the endpoint
-                  // For now show toast
-                  toast("Generate summary action (wire this to API)");
-                }}
-              >
-                Generate LLM Summary
-              </Button>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  toast("Index vector action (wire this to API)");
-                }}
-              >
-                Vectorize & Index
-              </Button>
-
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => {
-                  toast("Export profile (wire export / PDF)");
-                }}
-              >
-                Export as PDF
-              </Button>
-            </Stack>
-
-            <Box mb={4} />
-
-            <Text fontSize="lg" fontWeight={600} color="#033F79" mb={2}>
-              Contact
-            </Text>
-            <Stack spacing={2}>
-              <Text><b>Email:</b> {user?.CompanyEmail || "-"}</Text>
-              <Text>
-                <b>Website:</b>{" "}
-                {user?.StartupWebsiteUrl ? (
-                  <Link href={user?.StartupWebsiteUrl} isExternal color="blue.600">
-                    Visit site
-                  </Link>
-                ) : (
-                    <Link href={user?.InvestorWebsite} isExternal color="blue.600">
-                      Visit site
-                    </Link>
-                )}
+            <Box>
+              <Text fontSize="lg" fontWeight={600} color="black" mb={3}>
+                Business Details
               </Text>
-            </Stack>
+              <Stack spacing={4}>
+                <Box>
+                  <Text color="black" fontWeight={600} mb={1}>
+                    {user?.BusinessModel ? "Business Model:" : "Investment Ranges:"}
+                  </Text>
+                  {user?.BusinessModel ? (
+                    <Text color="gray.700">{user?.BusinessModel}</Text>
+                  ) : user?.CheckSizeRange?.length > 0 ? (
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                      {user?.CheckSizeRange.map((range, index) => (
+                        <Box 
+                          key={index}
+                          px={3}
+                          py={1}
+                          bg="#F3F6FF" 
+                          color="#011F3C"
+                          borderRadius="md"
+                          fontSize="sm"
+                        >
+                          {range}
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Text color="gray.700">-</Text>
+                  )}
+                </Box>
 
-            <Box my={4} />
-
-            <Text fontSize="sm" color="gray.500">
-              Tip: Edit profile to update info shown to investors. Make your tagline short and clear for better matches.
-            </Text>
+                <Box>
+                  <Text color="black" fontWeight={600} mb={1}>
+                    {user?.Competitors ? "Competitors & Differentiation:" : "Ticket Types:"}
+                  </Text>
+                  {user?.Competitors ? (
+                    <Text color="gray.700">{user?.Competitors}</Text>
+                  ) : user?.TicketType?.length > 0 ? (
+                    <Box display="flex" flexWrap="wrap" gap={2}>
+                      {user?.TicketType.map((type, index) => (
+                        <Box 
+                          key={index}
+                          px={3}
+                          py={1}
+                          bg="#F3F6FF" 
+                          color="#011F3C"
+                          borderRadius="md"
+                          fontSize="sm"
+                        >
+                          {type}
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Text color="gray.700">-</Text>
+                  )}
+                </Box>
+              </Stack>
+            </Box>
           </Box>
-        </Stack>
+
+          {/* Right Section */}
+          <Box flex="1" minW={["100%", "40%"]} minH="400px">
+            {/* Contact Section */}
+            <Box mb={6}>
+              <Text fontSize="lg" fontWeight={600} color="black" mb={3}>
+                Contact
+              </Text>
+              <Stack spacing={3}>
+                <Box>
+                  <Text color="black" fontWeight={600} as="span">Email:</Text>
+                  <Text as="span" ml={2} color="gray.700">
+                    {user?.CompanyEmail || "-"}
+                  </Text>
+                </Box>
+
+                <Box>
+                  <Text color="black" fontWeight={600} as="span">Website:</Text>
+                  <Text as="span" ml={2}>
+                    {user?.StartupWebsiteUrl || user?.InvestorWebsite ? (
+                      <Link 
+                        href={user?.StartupWebsiteUrl || user?.InvestorWebsite} 
+                        isExternal 
+                        color="blue.600"
+                        textDecoration="underline"
+                      >
+                        Visit Website
+                      </Link>
+                    ) : (
+                      <Text as="span" color="gray.700">-</Text>
+                    )}
+                  </Text>
+                </Box>
+
+                <Box>
+                  <Text color="black" fontWeight={600} as="span">Social Media:</Text>
+                  <Text as="span" ml={2}>
+                    {user?.SocialMediaLink || user?.InvestorSocialMedia ? (
+                      <Link 
+                        href={user?.SocialMediaLink || user?.InvestorSocialMedia} 
+                        isExternal 
+                        color="blue.600"
+                        textDecoration="underline"
+                      >
+                        View Profile
+                      </Link>
+                    ) : (
+                      <Text as="span" color="gray.700">-</Text>
+                    )}
+                  </Text>
+                </Box>
+              </Stack>
+            </Box>
+
+            {/* Elevator Pitch / Bio-Thesis Section */}
+            <Box mb={6}>
+              <Text fontSize="lg" fontWeight={600} color="black" mb={3}>
+                {user?.ElevatorPitch ? "Elevator Pitch" : "Bio-Thesis"}
+              </Text>
+              <Box 
+                p={4} 
+                border="1px solid" 
+                borderColor="gray.200" 
+                borderRadius="md"
+                bg="gray.50"
+              >
+                {user?.ElevatorPitch || user?.BioThesis ? (
+                  <Text color="gray.700" lineHeight="1.6">
+                    {user?.ElevatorPitch || user?.BioThesis}
+                  </Text>
+                ) : (
+                  <Text fontSize="sm" color="gray.500" textAlign="center">
+                    {user?.StartupName || user?.FounderName ? "No elevator pitch added yet" : "No bio-thesis added yet"}
+                  </Text>
+                )}
+              </Box>
+            </Box>
+
+            {/* Additional Info Box */}
+            <Box 
+              p={4} 
+              bg="#F8F9FF" 
+              borderRadius="md" 
+              border="1px solid" 
+              borderColor="gray.200"
+            >
+              <Text fontSize="sm" color="gray.600" lineHeight="1.5">
+                <Text as="span" fontWeight={600} color="#001B60">Tip:</Text> Keep your profile updated to improve visibility and matching with potential {user?.StartupName || user?.FounderName ? "investors" : "startups"}. A clear, concise tagline helps create better connections.
+              </Text>
+            </Box>
+          </Box>
+        </Flex>
       </Box>
     </Box>
   );
 }
 
-export default ViewStartupProfileComponent;
+export default ViewProfileComponent;

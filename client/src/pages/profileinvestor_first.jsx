@@ -46,33 +46,43 @@ function ProfileInvestorFirst({ pageSet }) {
         "Post-IPO / Maturity"
     ];
 
-    // const handleIndustryToggle = (industry) => {
-    //     setSelectedIndustries(prev => {
-    //         if (prev.includes(industry)) {
-    //             return prev.filter(item => item !== industry);
-    //         } else {
-    //             return [...prev, industry];
-    //         }
-    //     });
-    // };
+    const validateForm = () => {
+        if (!FirmName.trim()) {
+            toast.error("Firm Name is required");
+            return false;
+        }
+        if (!InvestorWebsite.trim()) {
+            toast.error("Role/Title is required");
+            return false;
+        }
+        if (SelectedIndustries.length === 0) {
+            toast.error("At least one Sector Interest must be selected");
+            return false;
+        }
+        if (SelectedStages.length === 0) {
+            toast.error("At least one Preferred Stage must be selected");
+            return false;
+        }
+        if (!InvestorLocation.trim()) {
+            toast.error("Geographic Focus is required");
+            return false;
+        }
+        if (!InvestorSocialMedia.trim()) {
+            toast.error("Fund Website URL is required");
+            return false;
+        }
+        if (!InvestorSocialMedia.startsWith('http://') && !InvestorSocialMedia.startsWith('https://')) {
+            toast.error("Links should start with http/https");
+            return false;
+        }
+        return true;
+    };
 
-    // const removeIndustry = (industryToRemove) => {
-    //     setSelectedIndustries(prev => prev.filter(industry => industry !== industryToRemove));
-    // };
-
-    // const handleStageToggle = (stage) => {
-    //     setSelectedStages(prev => {
-    //         if (prev.includes(stage)) {
-    //             return prev.filter(item => item !== stage);
-    //         } else {
-    //             return [...prev, stage];
-    //         }
-    //     });
-    // };
-
-    // const removeStage = (stageToRemove) => {
-    //     setSelectedStages(prev => prev.filter(stage => stage !== stageToRemove));
-    // };
+    const handleNext = () => {
+        if (validateForm()) {
+            pageSet(7);
+        }
+    };
 
     useEffect(() => {
         const temp = localStorage.getItem("token")
@@ -547,7 +557,7 @@ function ProfileInvestorFirst({ pageSet }) {
                         </Box>
 
                         <Button                                               //next button
-                            onClick={() => { pageSet(7) }}
+                            onClick={handleNext}
                             width="200px"
                             color="#011F3C"
                             borderRadius={"10px"}

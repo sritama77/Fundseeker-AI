@@ -12,11 +12,44 @@ function SignupStartup({ pageSet }) {
   // const [StartupName, setStartupName] = useState("")
   // const [CompanyEmail, setCompanyEmail] = useState("")
   const {Password,setPassword,ConfirmPassword,setConfirmPassword,StartupName, setStartupName,CompanyEmail, setCompanyEmail} = SignupStartupStore()
+  const [isEmailValid, setIsEmailValid] = useState(true)
+
   useEffect(() => {
     const temp = localStorage.getItem("token")
     temp !== null ? pageSet(11) : null
 
   }, [])
+
+  const validateEmail = (email) => {
+    return email.includes("@gmail.com")
+  }
+
+  const handleNextClick = () => {
+    if (!StartupName.trim()) {
+      return toast.error("Please enter Startup Name")
+    }
+    if (!validateEmail(CompanyEmail)) {
+      return toast.error("Enter a valid email")
+    }
+    if (!Password.trim()) {
+      return toast.error("Please enter Password")
+    }
+    if (!ConfirmPassword.trim()) {
+      return toast.error("Please confirm Password")
+    }
+    if (Password !== ConfirmPassword) {
+      return toast.error("Passwords do not match")
+    }
+
+    pageSet(4)
+    console.log({
+      "StartupName":StartupName,
+      "CompanyEmail":CompanyEmail,
+      "Password":Password,
+      "ConfirmPassword":ConfirmPassword
+    })
+  }
+
   return (
     <Box
       height="100%"
@@ -145,6 +178,7 @@ function SignupStartup({ pageSet }) {
                 fontFamily={"Poppins"}
                 placeholder='Startup Name'
                 border={"1px solid #FFF"}
+                value={StartupName}
                 onChange={
                   (e) => {
                     const value = e.target.value;
@@ -166,17 +200,13 @@ function SignupStartup({ pageSet }) {
                 color={"white"}
                 fontFamily={"Poppins"}
                 placeholder='Company Email'
-                border={"1px solid #FFF"}
+                border={isEmailValid ? "1px solid #FFF" : "1px solid red"}
+                value={CompanyEmail}
                 onChange={
                   (e) => {
                     const value = e.target.value;
-                    toast.dismiss();
-                    if (value.includes("@gmail.com") || value.includes("@gmail.com")) {
-                      setCompanyEmail(value);
-                    } else {
-                      toast.error("Enter valid email.");
-
-                    }
+                    setCompanyEmail(value);
+                    setIsEmailValid(validateEmail(value) || value === "");
                   }}
               />
             </InputGroup>
@@ -220,16 +250,7 @@ function SignupStartup({ pageSet }) {
             </InputGroup>
 
             <Button                                               //next button
-              onClick={() => { pageSet(4) 
-                console.log({
-                  "StartupName":StartupName,
-                  "CompanyEmail":CompanyEmail,
-                  "Password":Password,
-                  "ConfirmPassword":ConfirmPassword
-                })
-
-
-              }}
+              onClick={handleNextClick}
               width="200px"
               color="#011F3C"
               borderRadius={"10px"}

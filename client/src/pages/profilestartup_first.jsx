@@ -43,6 +43,39 @@ function ProfileStartupFirst({ pageSet }) {
 
     }, [])
 
+    const validateUrl = (url) => {
+        return url.startsWith("http://") || url.startsWith("https://")
+    }
+
+    const handleNextClick = () => {
+        if (!FounderName.trim()) {
+            return toast.error("Please enter Founder Name")
+        }
+        if (!StartupWebsiteUrl.trim()) {
+            return toast.error("Please enter Website URL")
+        }
+        if (!validateUrl(StartupWebsiteUrl)) {
+            return toast.error("Links should start with http/https")
+        }
+        if (StartupIndustryCategories.length === 0) {
+            return toast.error("Please select at least one industry")
+        }
+        if (!SocialMediaLink.trim()) {
+            return toast.error("Please enter Social Media Link")
+        }
+        if (!validateUrl(SocialMediaLink)) {
+            return toast.error("Links should start with http/https")
+        }
+        if (!Location.trim()) {
+            return toast.error("Please enter Location")
+        }
+        if (!CurrentStage) {
+            return toast.error("Please select Current Stage")
+        }
+
+        pageSet(6)
+    }
+
     return (
         <Box
             height={"100%"}
@@ -176,11 +209,8 @@ function ProfileStartupFirst({ pageSet }) {
                                         onChange={(e) => {
                                             const value = e.target.value;
                                             const onlyLetters = /^[A-Za-z\s]+$/.test(value);
-                                            toast.dismiss();
                                             if (onlyLetters || value === "") {
                                                 setFounderName(value);
-                                            } else {
-                                                toast.error("Full name should only contain letters.");
                                             }
                                         }}
                                         height="100%"
@@ -451,7 +481,7 @@ function ProfileStartupFirst({ pageSet }) {
                         </Box>
 
                         <Button                                               //next button
-                            onClick={() => { pageSet(6) }}
+                            onClick={handleNextClick}
                             width="200px"
                             color="#011F3C"
                             borderRadius={"10px"}

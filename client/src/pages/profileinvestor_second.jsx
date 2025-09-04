@@ -21,7 +21,31 @@ function ProfileInvestorSecond({ pageSet }) {
         CompanyEmail, setCompanyEmail
     } = SignupInvestorStore()
 
+    const validateForm = () => {
+        if (CheckSizeRange.length === 0) {
+            toast.error("At least one Check Size Range must be selected");
+            return false;
+        }
+        if (TicketType.length === 0) {
+            toast.error("At least one Ticket Type must be selected");
+            return false;
+        }
+        if (!BioThesis.trim()) {
+            toast.error("Bio/Investment Thesis is required");
+            return false;
+        }
+        if (!SyndicationPreference.trim()) {
+            toast.error("Syndication Preference must be selected");
+            return false;
+        }
+        return true;
+    };
+
     async function InvestorSignupHandler() {
+       if (!validateForm()) {
+           return;
+       }
+
        if(Password === ConfirmPassword){
            const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/signupinvestor`, {
 

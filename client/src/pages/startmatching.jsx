@@ -6,7 +6,7 @@ import { CircleUserRound, Search, BarChart3, Puzzle, MessageSquare, Check, Circl
 import SideNavbar from "../components/ui/sidenavbar";
 import ViewDatabaseComponent from "../components/ui/viewdatabase"
 import AnalysedTableComponent from "../components/ui/analysedtable"
-import ViewStartupProfileComponent from "../components/ui/startup_profileinfo"
+import ViewProfileComponent from "../components/ui/startup_profileinfo"
 
 function StartMatchingPage({ pageSet, currentPage }) {
     const [ToggleComponent, setToggleComponent] = useState(0)
@@ -228,7 +228,7 @@ function StartMatchingPage({ pageSet, currentPage }) {
 
 
 
-                    </> : <AnalysedTableComponent />) : (ToggleComponent === 1 ? <ViewDatabaseComponent /> : ToggleComponent === 5 ? <ViewStartupProfileComponent/> : null)}
+                    </> : <AnalysedTableComponent />) : (ToggleComponent === 1 ? <ViewDatabaseComponent /> : ToggleComponent === 5 ? <ViewProfileComponent/> : null)}
                 </Box>
             </Box>
 

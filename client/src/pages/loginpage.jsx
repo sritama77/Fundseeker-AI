@@ -9,6 +9,7 @@ import axios from 'axios';
 function LoginPage({ pageSet }) {
   const [Password, setPassword] = useState("")
   const [Email, setEmail] = useState("")
+  const [isEmailValid, setIsEmailValid] = useState(true)
 
 
   useEffect(() => {
@@ -17,9 +18,14 @@ function LoginPage({ pageSet }) {
 
   }, [])
 
-
+  const validateEmail = (email) => {
+    return email.includes("@gmail.com")
+  }
 
   async function LoginHandler() {
+    if (!validateEmail(Email)) {
+      return toast.error("Enter a Valid email")
+    }
 
     const resInvestor = await axios.post(`${import.meta.env.VITE_SERVER_URL}/logininvestor`, {
 
@@ -162,17 +168,13 @@ function LoginPage({ pageSet }) {
                 color={"white"}
                 fontFamily={"Poppins"}
                 placeholder='Email'
-                border={"1px solid #FFF"}
+                border={isEmailValid ? "1px solid #FFF" : "1px solid red"}
+                value={Email}
                 onChange={
                   (e) => {
                     const value = e.target.value;
-                    toast.dismiss();
-                    if (value.includes("@gmail.com") || value.includes("@gmail.com")) {
-                      setEmail(value);
-                    } else {
-                      toast.error("Enter valid email.");
-
-                    }
+                    setEmail(value);
+                    setIsEmailValid(validateEmail(value) || value === "");
                   }}
               />
             </InputGroup>
