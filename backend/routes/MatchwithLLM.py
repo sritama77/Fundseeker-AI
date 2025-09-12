@@ -24,7 +24,9 @@ llm_bp_model = Blueprint("llmmodel",__name__)
 def LLM():
 # Configure APIs - you can choose which one to us
     data = request.json
-    startup_id = data["UserId"] 
+    if data:
+        User_id = data["UserId"] 
+        isStartup = data["isStartup"]
 
     USE_GEMINI = True  # Set to False to use OpenAI instead
 
@@ -352,19 +354,20 @@ def LLM():
 
     # --- 8. MONGODB OPERATIONS ---
     # saving the startup-investor match pairs to database ----------
-    def save_match_to_db(matches_collection, startup_id: str, overall_score: float,scorecard: Dict[str, Any],investor_id: str,
-                        investor_email:str="",investor_location:str="",investor_company:str="",investor_title:str="",
-                        startup_name: str = "", investor_name: str = ""):
+    def save_match_to_db(matches_collection, startup_id: str, investor_id: str,overall_score: float,scorecard: Dict[str, Any]
+                        # ,investor_email:str="",investor_location:str="",investor_company:str="",investor_title:str="",
+                        # startup_name: str = "", investor_name: str = ""
+                        ):
         """Save match result to MongoDB matches collection."""
         
         match_document = {
             "startup_id": startup_id,
             "investor_id": investor_id,
-            "startup_name": startup_name,
-            "investor_name": investor_name,
-            "investor_company":investor_company,
-            "investor_email":investor_email,
-            "investor_location":investor_location,
+            # "startup_name": startup_name,
+            # "investor_name": investor_name,
+            # "investor_company":investor_company,
+            # "investor_email":investor_email,
+            # "investor_location":investor_location,
             "overall_score": overall_score,
             "scorecard": scorecard,
             "created_at": datetime.utcnow(),
@@ -483,8 +486,7 @@ def LLM():
                     
                     if overall_score > 0 and scorecard:
                         # Save successful match
-                        if save_match_to_db(matches_collection, startup_id, investor_id, 
-                                        overall_score, scorecard, startup_name, investor_name):
+                        if save_match_to_db(matches_collection, startup_id,  investor_id,overall_score,scorecard):
                             successful_matches += 1
                             
                             # Show sample results for first few matches
@@ -497,14 +499,12 @@ def LLM():
                             failed_matches += 1
                     else:
                         # Save failed match
-                        save_match_to_db(matches_collection, startup_id, investor_id, 
-                                        -1.0, {}, startup_name, investor_name)
+                        save_match_to_db(matches_collection, startup_id, investor_id,overall_score,scorecard)
                         failed_matches += 1
                 
                 except Exception as e:
                     print(f"❌ Error processing {startup_name} x {investor_name}: {e}")
-                    save_match_to_db(matches_collection, startup_id, investor_id, 
-                                    -1.0, {"error": str(e)}, startup_name, investor_name)
+                    save_match_to_db(matches_collection, startup_id, investor_id,overall_score,scorecard)
                     failed_matches += 1
                 
                 # Rate limiting
@@ -640,8 +640,8 @@ def LLM():
             # Save demo result
             startup_id = str(startup.get("_id", "demo_startup"))
             investor_id = str(investor.get("_id", "demo_investor"))
-            save_match_to_db(matches_collection, startup_id, investor_id, 
-                            overall_score, scorecard, startup_name, investor_name)
+            save_match_to_db(matches_collection, startup_id,  
+                            overall_score=overall_score,investor_id=investor_id,scorecard=scorecard)
             print(f"\n💾 Demo result saved to database")
         except Exception as e:
             print(f"Error {e}")
@@ -656,7 +656,7 @@ def LLM():
             return jsonify({"message":"Failed to fetch collections"})
         try:
             # Get one startup and one investor for demo
-            Startup = startup_collection.find_one({"_id": ObjectId(startup_id)})
+            Startup = startup_collection.find_one({"_id": ObjectId(User_id)})
             print(Startup)
             if investor_collection is not None:
                 investors = list(investor_collection.find({}))
@@ -676,12 +676,7 @@ def LLM():
                 inv_company=str(investor.get("FirmName","Unknown Company"))
                 investor_location=str(investor.get("InvestorLocation","__"))
                 investor_title=""
-                save_match_to_db(matches_collection, startup_id, overall_score, scorecard, investor_id=investor_id,
-                                investor_email=inv_email,investor_location=investor_location, investor_company=inv_company,                              
-                                investor_title=investor_title,  startup_name=startup_name, investor_name=investor_name)
-                        #         (matches_collection, startup_id: str, overall_score: float,scorecard: Dict[str, Any],investor_id: str,
-                        # investor_email:str="",investor_location:str="",investor_company:str="",investor_title:str="",
-                        # startup_name: str = "", investor_name: str = "")
+                save_match_to_db(matches_collection, User_id, investor_id=investor_id,overall_score=overall_score,scorecard=scorecard)                        
                 result.append({"Start_Name":startup_name,
                         "Investor_Name":investor_name,
                         "Investor_Company":inv_company,
@@ -691,24 +686,87 @@ def LLM():
                         "Overall_Score":overall_score,
                         "Scorecard":scorecard})
             return jsonify({"Success":True,"result":result})                
-                # print(f"\nResult:")
-                # print(f"Overall score = {overall_score}")
-                # print("Explanation")
-                # print(json.dumps(scorecard, indent=2))
         except Exception as e:
             return jsonify({"message":f"bhogoban{e}"})
         finally:
             if client:
                 pass
 
-# --- 12. MAIN EXECUTION ---
-    # if __name__ == "__main__":
-    #     # print(" LLM-Based Startup-Investor Matching System ")
-    #     # print(f" Using {'Gemini' if USE_GEMINI else 'OpenAI'} API")
-        
-    #     #demo_with_mongodb()
-    #     create_matches()
-    return create_matches()  
+    def create_matches_trial(isStartup:bool):
+        startup_collection, investor_collection, matches_collection, client = get_database_collections()
+
+        if startup_collection is None or investor_collection is None or matches_collection is None or client is None:          
+            return jsonify({"message":"Failed to fetch collections"})
+
+        try:
+            if isStartup:
+                Startup = startup_collection.find_one({"_id": ObjectId(User_id)})
+                print(Startup)
+                if investor_collection is not None:
+                    investors = list(investor_collection.find({}))
+                    print(investors)
+                
+                if not Startup or not investors:
+                    return jsonify({"message":"❌ No startup or investor data found in database"})
+                            
+                startup_name = Startup.get("StartupName", "Unknown Startup")
+                result = []
+                for investor in investors:                
+                    investor_name = investor.get("Name", investor.get("Username", "Unknown Investor"))
+                    overall_score, scorecard = analyze_startup_investor_match(startup_doc= Startup,investor_doc= investor)                     
+                    investor_id = str(investor.get("_id", "demo_investor"))
+                    inv_email=str(investor.get("CompanyEmail","Not Available"))
+                    inv_company=str(investor.get("FirmName","Unknown Company"))
+                    investor_location=str(investor.get("InvestorLocation","__"))
+                    investor_title=""
+                    
+                    save_match_to_db(matches_collection, User_id, investor_id=investor_id,overall_score=overall_score,scorecard=scorecard)                        
+                    result.append({"Start_Name":startup_name,
+                            "Investor_Name":investor_name,
+                            "Investor_Company":inv_company,
+                            "Investor_Email":inv_email,
+                            "Investor_Location":investor_location,
+                            "Investor_Title":investor_title,
+                            "Overall_Score":overall_score,
+                            "Scorecard":scorecard})
+                return jsonify({"Success":True,"result":result})           
+            else:
+                investor = investor_collection.find_one({"_id": ObjectId(User_id)})
+                print(investor)
+                if startup_collection is not None:
+                    startups = list(startup_collection.find({}))
+                    print(startups)
+                
+                if not investor or not startups:
+                    return jsonify({"message":"❌ No investor or investor data found in database"})
+                            
+                investor_name = investor.get("Username", "Unknown investor")
+                result = []
+                for startup in startups:                
+                    overall_score, scorecard = analyze_startup_investor_match(investor_doc=investor, startup_doc=startup)                     
+                    startup_id = str(startup.get("_id", "demo_startup"))
+                    founder_name=str(startup.get("FounderName","Unknown Founder"))
+                    startup_email=str(startup.get("CompanyEmail","Not Available"))
+                    startup_company=str(startup.get("StartupName","Unknown Company"))
+                    startup_location=str(startup.get("Location","__"))
+                    investor_title=""
+                    
+                    save_match_to_db(matches_collection, startup_id, investor_id=User_id,overall_score=overall_score,scorecard=scorecard)                        
+                    result.append({"Investor_Name":investor_name,
+                            "Founder_Name":founder_name,
+                            "Startup_Company":startup_company,
+                            "Startup_Email":startup_email,
+                            "Startup_Location":startup_location,
+                            "Overall_Score":overall_score,
+                            "Scorecard":scorecard})
+                return jsonify({"Success":True,"result":result})
+        except Exception as e:
+            return jsonify({"message":f"bhogoban{e}"})
+        finally:
+            if client:
+                pass
+    # return create_matches()
+    return create_matches_trial(isStartup)  
         # Uncomment to process all matchespairs=get_all_startup_investor_pairs(startup_profile,investor_collection)  (be careful with large datasets!)
         # process_all_matches(limit_pairs=50)  # Limit for testing
         
