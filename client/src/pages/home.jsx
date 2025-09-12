@@ -117,7 +117,9 @@ function HomePage({ pageSet, currentPage }) {
             flexDirection={"column"}
             bg="linear-gradient(to top, #0054D8 30%, #001B60 100%)"
             gap={8}
+            pt="80px"
         >
+            
             {/* Use the Navbar component */}
             <Navbar currentPage={currentPage} pageSet={pageSet} />
 
