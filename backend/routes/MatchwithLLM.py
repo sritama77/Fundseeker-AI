@@ -573,12 +573,16 @@ def LLM():
                         inv_company=str(investor.get("FirmName","Unknown Company"))
                         investor_location=str(investor.get("InvestorLocation","__"))
                         investor_title=str(investor.get("InvestorTitle",""))
+                        investor_website=str(investor.get("InvestorWebsite",""))
+                        social_link=str(investor.get("InvestorSocialMedia",""))
                     investor_profiles.append({"Startup_name":startup_name,
                             "Investor_Name":investor_name,
                             "Investor_Company":inv_company,
                             "Investor_Email":inv_email,
                             "Investor_Location":investor_location,
-                            "Investor_Title":investor_title
+                            "Investor_Title":investor_title,
+                            "Investor_Website":investor_website,
+                            "Investor_Social_Media":social_link
                             })
                 
                 return investor_profiles
