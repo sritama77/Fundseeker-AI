@@ -1,12 +1,12 @@
 "use client"
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText } from "@chakra-ui/react";
-import { useState } from "react"
-import { CircleUserRound, Search, BarChart3, Puzzle, MessageSquare, Check, CircleSmall } from 'lucide-react';
+import { useState, useEffect } from "react"
+import { CircleUserRound, Search, BarChart3, Puzzle, MessageSquare, Check, CircleSmall, Settings,ServerCog , Database, ChevronLeft, ChevronRight, AudioWaveform, Handshake,Infinity } from 'lucide-react';
 import Navbar from '../components/ui/navbar';
 
-// Tilting Tile Component
-const TiltingTile = ({ icon: IconComponent, title, description, height = "100%", width = "95%" }) => {
+// Tilting Tile Component (for Core Features and FAQ)
+const TiltingTile = ({ icon: IconComponent, title, description, height = "auto", width = "95%" }) => {
     const [tilt, setTilt] = useState({ x: 0, y: 0 });
 
     const handleMouseMove = (e) => {
@@ -85,7 +85,7 @@ const TiltingTile = ({ icon: IconComponent, title, description, height = "100%",
                     <Text
                         fontFamily="Poppins"
                         color="black"
-                        fontSize="20px"
+                        fontSize="15px"
                         fontWeight={600}
                         textAlign="left"
                     >
@@ -94,7 +94,7 @@ const TiltingTile = ({ icon: IconComponent, title, description, height = "100%",
                     <Text
                         fontFamily="Poppins"
                         color="black"
-                        fontSize="15px"
+                        fontSize="12px"
                         fontWeight={400}
                         textAlign="left"
                     >
@@ -106,214 +106,196 @@ const TiltingTile = ({ icon: IconComponent, title, description, height = "100%",
     );
 };
 
+// FAQ Tile Component (no icon, tilting effect)
+const FAQTile = ({ title, description, height = "auto", width = "95%" }) => {
+    return (
+        <Box
+            height={height}
+            width={width}
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            bgColor="white"
+            flexDirection="column"
+            gap={4}
+            borderRadius="15px"
+            boxShadow="0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)"
+            cursor="pointer"
+            transition="all 0.3s ease"
+            _hover={{
+                boxShadow: "0 16px 48px rgba(0, 0, 0, 0.25), 0 8px 16px rgba(0, 0, 0, 0.15)",
+                transform: "translateY(-4px) scale(1.02)",
+            }}
+        >
+            <Box
+                height="88%"
+                width="90%"
+                display="flex"
+                justifyContent="center"
+                alignItems="flex-start"
+                flexDirection="column"
+            >
+                <Text
+                    fontFamily="Poppins"
+                    color="black"
+                    fontSize="15px"
+                    fontWeight={600}
+                    textAlign="left"
+                    mb={2}
+                >
+                    {title}
+                </Text>
+                <Text
+                    fontFamily="Poppins"
+                    color="black"
+                    fontSize="12px"
+                    fontWeight={400}
+                    textAlign="left"
+                    lineHeight="1.4"
+                >
+                    {description}
+                </Text>
+            </Box>
+        </Box>
+    );
+};
+
+// Team Member Tile Component (simple hover effect)
+const TeamTile = ({ name, role, height = "auto", width = "300px" }) => {
+    return (
+        <Box
+            height={height}
+            width={width}
+            minWidth={width} // Ensures tiles maintain size during scroll
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            bgColor="white"
+            flexDirection="column"
+            gap={3}
+            borderRadius="15px"
+            boxShadow="0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)"
+            cursor="pointer"
+            transition="all 0.3s ease"
+            _hover={{
+                boxShadow: "0 16px 48px rgba(0, 0, 0, 0.25), 0 8px 16px rgba(0, 0, 0, 0.15)",
+                transform: "translateY(-4px)",
+            }}
+        >
+            <Box
+                height="80%"
+                width="85%"
+                display="flex"
+                justifyContent="center"
+                alignItems="center"
+                flexDirection="column"
+                gap={2}
+            >
+                <Text
+                    fontFamily="Poppins"
+                    color="black"
+                    fontSize="16px"
+                    fontWeight={600}
+                    textAlign="center"
+                >
+                    {name}
+                </Text>
+                <Text
+                    fontFamily="Poppins"
+                    color="#666"
+                    fontSize="13px"
+                    fontWeight={400}
+                    textAlign="center"
+                    lineHeight="1.4"
+                >
+                    {role}
+                </Text>
+            </Box>
+        </Box>
+    );
+};
+
 function AboutPage({ pageSet, currentPage }) {
+    // State for team carousel
+    const [teamScrollPosition, setTeamScrollPosition] = useState(0);
+
+    // Team members data
+    const teamMembers = [
+        { name: "Sritama Basu", role: "UI/UX designer, Frontend Developer, Git Coordinator" },
+        { name: "Soumyajit Manna", role: "AI/ML developer" },
+        { name: "Ramit Bid", role: "Data Analyst" },
+        { name: "Saikat Das", role: "Cloud Engineer" },
+        { name: "Udayan Majumder", role: "Full-Stack Developer" },
+        { name: "Udayangshu Mandal", role: "Backend Developer" }
+    ];
+
+    // FAQ data
+    const faqData = [
+        {
+            title: "How do you source investor data?",
+            description: "We aggregate public, permitted sources (VC blogs, Twitter via API, public firm pages) and partner databases: we prioritize API access over scraping."
+        },
+        {
+            title: "Can I control outreach drafts?",
+            description: "Yes — every outreach message is editable before sending and tracked in the dashboard."
+        },
+        {
+            title: "How is my data used?",
+            description: "We use submitted data to compute matches and craft outreach; we never sell raw individual data. See Privacy Policy for details."
+        },
+        {
+            title: "What models do you use?",
+            description: "We use sentence-transformers for embeddings and GPT-class models for summarization & outreach (configurable)."
+        }
+    ];
+
     const handlePageSelect = (pageNumber) => {
         if (pageSet) {
             pageSet(pageNumber);
         }
     };
 
+    // Team carousel scroll functions
+    const scrollTeamLeft = () => {
+        setTeamScrollPosition(prev => Math.max(prev - 320, 0));
+    };
+
+    const scrollTeamRight = () => {
+        const maxScroll = (teamMembers.length - 3) * 320;
+        setTeamScrollPosition(prev => Math.min(prev + 320, maxScroll));
+    };
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     return (
         <Box
-            height="100%"
+            minHeight={"100vh"}
             width={"100%"}
             display={"flex"}
-            justifyContent={"center"}
+            justifyContent={"flex-start"}
             alignItems={"center"}
             flexDirection={"column"}
             bg="linear-gradient(to top, #0054D8 30%, #001B60 100%)"
-            gap={8}
+            gap={12}
+            pt="100px"
+            overflowX="hidden" // Prevents horizontal scroll on main container
         >
 
             {/* Use the Navbar component */}
             <Navbar currentPage={currentPage} pageSet={pageSet} />
 
-
-            {/* <Box
-                height="10%"
-                width={"100%"}
-                display={"flex"}
-                justifyContent={"flex-start"}
-                alignItems={"center"}
-            >
-                <Box                                                //fundseeker logo
-                    height={"95%"}
-                    width={"10%"}
-                    display={"flex"}
-                    justifyContent={"center"}
-                    flexDirection={"column"}
-                    alignItems={"center"}
-                    gap={1}
-                    paddingTop={2}>
-                    <Image height={"80%"}
-                        width={"auto"}
-                        display={"flex"}
-                        src="/fundseeker_logo.png" />
-                </Box>
-
-
-
-
-
-                <Box                                                //navbar
-                    height={"100%"}
-                    width={"80%"}
-                    display={"flex"}
-                    justifyContent={"center"}
-                    flexDirection={"row"}
-                    alignItems={"center"}
-                    gap={2}>
-
-                    <Box
-                        height="60%"
-                        width="60%"
-                        display="flex"
-                        justifyContent="center"
-                        alignItems="center"
-                        bgColor="rgba(217, 217, 217, 0.3)"
-                        borderRadius="50px"
-                        backdropFilter="blur(10px)"
-                        boxShadow="0 8px 32px rgba(0, 0, 0, 0.1)"
-                        px={8}
-                        gap={36}
-                        position="relative"
-                        overflow="hidden"
-                    >
-
-                        <Text
-                            fontFamily="Poppins"
-                            fontSize="18px"
-                            fontWeight={currentPage === 9 ? 600 : 400}
-                            color={currentPage === 9 ? "#E5C48A" : "white"}
-                            cursor="pointer"
-                            position="relative"
-                            transition="all 0.3s ease"
-                            px={4}
-                            py={2}
-                            _hover={currentPage !== 9 ? {
-                                color: "#E5C48A",
-                                _after: {
-                                    width: "100%",
-                                    backgroundColor: "#E5C48A"
-                                }
-                            } : {
-                            }}
-                            _after={currentPage !== 9 ? {
-                                content: '""',
-                                position: "absolute",
-                                width: "0%",
-                                height: "2px",
-                                bottom: "0px",
-                                left: "50%",
-                                transform: "translateX(-50%)",
-                                backgroundColor: "transparent",
-                                transition: "all 0.3s ease"
-                            } : {}}
-                            onClick={() => handlePageSelect(9)}
-                        >
-                            ABOUT
-                        </Text>
-
-                        <Text
-                            fontFamily="Poppins"
-                            fontSize="18px"
-                            fontWeight={currentPage === 8 ? 600 : 400}
-                            color={currentPage === 8 ? "#E5C48A" : "white"}
-                            cursor="pointer"
-                            position="relative"
-                            transition="all 0.3s ease"
-                            px={4}
-                            py={2}
-                            _hover={currentPage !== 8 ? {
-                                color: "#E5C48A",
-                                _after: {
-                                    width: "100%",
-                                    backgroundColor: "#E5C48A"
-                                }
-                            } : {}}
-                            _after={currentPage !== 8 ? {
-                                content: '""',
-                                position: "absolute",
-                                width: "0%",
-                                height: "2px",
-                                bottom: "0px",
-                                left: "50%",
-                                transform: "translateX(-50%)",
-                                backgroundColor: "transparent",
-                                transition: "all 0.3s ease"
-                            } : {}}
-                            onClick={() => handlePageSelect(8)}
-                        >
-                            HOME
-                        </Text>
-
-
-                        <Text
-                            fontFamily="Poppins"
-                            fontSize="18px"
-                            fontWeight={currentPage === 10 ? 600 : 400}
-                            color={currentPage === 10 ? "#E5C48A" : "white"}
-                            cursor="pointer"
-                            position="relative"
-                            transition="all 0.3s ease"
-                            px={4}
-                            py={2}
-                            _hover={currentPage !== 10 ? {
-                                color: "#E5C48A",
-                                _after: {
-                                    width: "100%",
-                                    backgroundColor: "#E5C48A"
-                                }
-                            } : {}}
-                            _after={currentPage !== 10 ? {
-                                content: '""',
-                                position: "absolute",
-                                width: "0%",
-                                height: "2px",
-                                bottom: "0px",
-                                left: "50%",
-                                transform: "translateX(-50%)",
-                                backgroundColor: "transparent",
-                                transition: "all 0.3s ease"
-                            } : {}}
-                            onClick={() => handlePageSelect(10)}
-                        >
-                            PRICING
-                        </Text>
-                    </Box>
-
-                </Box>
-
-
-                <Box                                                //profile
-                    height={"100%"}
-                    width={"10%"}
-                    display={"flex"}
-                    justifyContent={"center"}
-                    flexDirection={"row"}
-                    alignItems={"center"}
-                    gap={2}>
-                    <CircleUserRound
-                        height={"50%"}
-                        width={"auto"}
-                        display={"flex"}
-                        color={'white'}
-                        strokeWidth={1.5}
-                    />
-                </Box>
-            </Box> */}
-
+            {/* Hero Section */}
             <Box
-                height="30%"
                 width={"100%"}
                 display={"flex"}
                 justifyContent={"center"}
                 alignItems={"center"}
                 gap={32}
             >
-
-                <Box                                //2nd div first text box
-                    height={"100%"}
+                {/* Main Text Section */}
+                <Box
                     width={"40%"}
                     display={"flex"}
                     justifyContent={"center"}
@@ -338,18 +320,18 @@ function AboutPage({ pageSet, currentPage }) {
                         fontWeight={400}
                         textAlign="left"
                     >
-                        We turn multi-source investor signals into clean insights, rank relevance with hybrid AI logic, and enable high-quality, personalized outreach — all with privacy-first practices.                    </Text>
+                        We turn multi-source investor signals into clean insights, rank relevance with hybrid AI logic, and enable high-quality, personalized outreach — all with privacy-first practices.
+                    </Text>
                 </Box>
 
-                <Box                                        //chart box
-                    height={"100%"}
+                {/* What We Prioritize Box */}
+                <Box
                     width={"40%"}
                     display={"flex"}
                     justifyContent={"right"}
                     alignItems={"center"}
                 >
                     <Box
-                        height="100%"
                         width="80%"
                         display="flex"
                         justifyContent="center"
@@ -360,13 +342,14 @@ function AboutPage({ pageSet, currentPage }) {
                         position="relative"
                     >
                         <Box
-                            height={"80%"}
-                            width={"80%"}
+                            width={"90%"}
                             display={"flex"}
                             justifyContent={"left"}
                             alignItems={"left"}
                             flexDirection={"column"}
                             gap={4}
+                            px={6}
+                            py={4}
                         >
                             <Text
                                 fontFamily={"Poppins"}
@@ -378,9 +361,7 @@ function AboutPage({ pageSet, currentPage }) {
                                 What we prioritize
                             </Text>
 
-
                             <Box
-                                height={"10%"}
                                 width={"100%"}
                                 display={"flex"}
                                 justifyContent={"left"}
@@ -406,7 +387,6 @@ function AboutPage({ pageSet, currentPage }) {
                                 </Text>
                             </Box>
                             <Box
-                                height={"10%"}
                                 width={"100%"}
                                 display={"flex"}
                                 justifyContent={"left"}
@@ -432,7 +412,6 @@ function AboutPage({ pageSet, currentPage }) {
                                 </Text>
                             </Box>
                             <Box
-                                height={"10%"}
                                 width={"100%"}
                                 display={"flex"}
                                 justifyContent={"left"}
@@ -457,26 +436,22 @@ function AboutPage({ pageSet, currentPage }) {
                                     Actionability: editable outreach and CRM exports
                                 </Text>
                             </Box>
-
                         </Box>
-
-
-
                     </Box>
                 </Box>
             </Box>
 
+            {/* Main Content Section - Core Features and How it Works */}
             <Box
-                height={"40%"}
                 width={"100%"}
                 display={"flex"}
                 justifyContent={"center"}
-                alignItems={"center"}
+                alignItems={"flex-start"}
                 flexDirection={"row"}
-                gap={32}
+                gap={20}
             >
-                <Box                                //3rd div how it works er part
-                    height={"100%"}
+                {/* Core Features Section (Left Side - 6 tiles in 3x2 grid) */}
+                <Box
                     width={"50%"}
                     display={"flex"}
                     justifyContent={"center"}
@@ -491,49 +466,23 @@ function AboutPage({ pageSet, currentPage }) {
                         fontWeight={500}
                         textAlign={"left"}
                     >
-                        How It Works
+                        Core features
                     </Text>
-                    <Box                            //first duto rec
-                        height={"50%"}
-                        width={"100%"}
-                        display={"flex"}
-                        justifyContent={"center"}
-                        alignItems={"flex-start"}
-                        flexDirection={"row"}
+
+                    {/* Subheading */}
+                    <Text
+                        fontFamily={"Poppins"}
+                        color={"#B8BCC8"}
+                        fontSize={"15px"}
+                        fontWeight={400}
+                        textAlign={"left"}
+                        mb={2}
                     >
-                        <Box
-                            height={"100%"}
-                            width={"50%"}
-                            display={"flex"}
-                            justifyContent={"center"}
-                            alignItems={"center"}
-                            flexDirection={"column"}
-                        >
-                            <TiltingTile
-                                icon={Search}
-                                title="Discover"
-                                description="Get investor data from ethical sources for accurate insights."
-                            />
-                        </Box>
+                        Concise, explainable components that power matches and outreach.
+                    </Text>
 
-                        <Box
-                            height={"100%"}
-                            width={"50%"}
-                            display={"flex"}
-                            justifyContent={"center"}
-                            alignItems={"center"}
-                            flexDirection={"column"}
-                        >
-                            <TiltingTile
-                                icon={BarChart3}
-                                title="Analyze & Rank"
-                                description="Summarize investor profiles and rank them with semantic search."
-                            />
-                        </Box>
-                    </Box>
-
-                    <Box                                        //2nd duto box
-                        height={"50%"}
+                    {/* First Row of Tiles */}
+                    <Box
                         width={"100%"}
                         display={"flex"}
                         justifyContent={"center"}
@@ -542,8 +491,22 @@ function AboutPage({ pageSet, currentPage }) {
                         gap={2}
                     >
                         <Box
-                            height={"100%"}
-                            width={"50%"}
+                            width={"33%"}
+                            display={"flex"}
+                            justifyContent={"center"}
+                            alignItems={"center"}
+                            flexDirection={"column"}
+                        >
+                            <TiltingTile
+                                icon={AudioWaveform }
+                                title="Multi‑Agent Pipeline"
+                                description="Collector → Reducer → Summarizer → Embedder → Matcher"
+                                height="110px"
+                            />
+                        </Box>
+
+                        <Box
+                            width={"33%"}
                             display={"flex"}
                             justifyContent={"center"}
                             alignItems={"center"}
@@ -551,33 +514,89 @@ function AboutPage({ pageSet, currentPage }) {
                         >
                             <TiltingTile
                                 icon={Puzzle}
-                                title="Match & Score"
-                                description="Smart matching based on sector, stage, size, and geography."
+                                title="Hybrid Matching"
+                                description="Semantic + rule filters (stage, sector, geography, check size)"
+                                height="110px"
                             />
                         </Box>
 
                         <Box
-                            height={"100%"}
-                            width={"50%"}
+                            width={"33%"}
                             display={"flex"}
                             justifyContent={"center"}
                             alignItems={"center"}
                             flexDirection={"column"}
                         >
                             <TiltingTile
-                                icon={MessageSquare}
-                                title="Outreach"
-                                description="Generate investor messages with AI-driven context awareness."
+                                icon={Database }
+                                title="Ethical Data"
+                                description="Public sources & API-first approach; no restricted scraping"
+                                height="110px"
+                            />
+                        </Box>
+                    </Box>
+
+                    {/* Second Row of Tiles */}
+                    <Box
+                        width={"100%"}
+                        display={"flex"}
+                        justifyContent={"center"}
+                        alignItems={"flex-start"}
+                        flexDirection={"row"}
+                        gap={2}
+                    >
+                        <Box
+                            width={"33%"}
+                            display={"flex"}
+                            justifyContent={"center"}
+                            alignItems={"center"}
+                            flexDirection={"column"}
+                        >
+                            <TiltingTile
+                                icon={Handshake }
+                                title="Personalized Outreach"
+                                description="Editable GPT-powered templates for every match"
+                                height="110px"
+                            />
+                        </Box>
+
+                        <Box
+                            width={"33%"}
+                            display={"flex"}
+                            justifyContent={"center"}
+                            alignItems={"center"}
+                            flexDirection={"column"}
+                        >
+                            <TiltingTile
+                                icon={Infinity }
+                                title="Learning Loop"
+                                description="Response signals continuously improve relevance"
+                                height="110px"
+                            />
+                        </Box>
+
+                        <Box
+                            width={"33%"}
+                            display={"flex"}
+                            justifyContent={"center"}
+                            alignItems={"center"}
+                            flexDirection={"column"}
+                        >
+                            <TiltingTile
+                                icon={ServerCog }
+                                title="Cloud-ready"
+                                description="Qdrant-backed semantic search with metadata filters"
+                                height="110px"
                             />
                         </Box>
                     </Box>
                 </Box>
 
-                <Box                                        //key features box
-                    height={"100%"}
-                    width={"30%"}
+                {/* How it Works Section (Right Side) */}
+                <Box
+                    width={"35%"}
                     display={"flex"}
-                    justifyContent={"center"}
+                    justifyContent={"right"}
                     alignItems={"left"}
                     flexDirection={"column"}
                     gap={2}
@@ -589,10 +608,11 @@ function AboutPage({ pageSet, currentPage }) {
                         fontWeight={500}
                         textAlign={"left"}
                     >
-                        Key Features
+                        How it works — the multi-agent flow
                     </Text>
+
+                    {/* Multi-agent Flow Steps */}
                     <Box
-                        height={"10%"}
                         width={"100%"}
                         display={"flex"}
                         justifyContent={"left"}
@@ -600,12 +620,16 @@ function AboutPage({ pageSet, currentPage }) {
                         flexDirection={"row"}
                         gap={2}
                     >
-                        <Check
-                            size={25}
-                            color="#09B285"
-                            strokeWidth={1.5}
-                        />
-
+                        <Text
+                            fontFamily={"Poppins"}
+                            color={"white"}
+                            fontSize={"15px"}
+                            fontWeight={600}
+                            textAlign={"left"}
+                            minWidth="20px"
+                        >
+                            1.
+                        </Text>
                         <Text
                             fontFamily={"Poppins"}
                             color={"white"}
@@ -613,12 +637,11 @@ function AboutPage({ pageSet, currentPage }) {
                             fontWeight={400}
                             textAlign={"left"}
                         >
-                            Multi-Agent AI Architecture
+                            <Text as="span" fontWeight={600}>Collector:</Text> Aggregates public signals and partner data.
                         </Text>
-
                     </Box>
+
                     <Box
-                        height={"10%"}
                         width={"100%"}
                         display={"flex"}
                         justifyContent={"left"}
@@ -626,12 +649,16 @@ function AboutPage({ pageSet, currentPage }) {
                         flexDirection={"row"}
                         gap={2}
                     >
-                        <Check
-                            size={25}
-                            color="#09B285"
-                            strokeWidth={1.5}
-                        />
-
+                        <Text
+                            fontFamily={"Poppins"}
+                            color={"white"}
+                            fontSize={"15px"}
+                            fontWeight={600}
+                            textAlign={"left"}
+                            minWidth="20px"
+                        >
+                            2.
+                        </Text>
                         <Text
                             fontFamily={"Poppins"}
                             color={"white"}
@@ -639,12 +666,11 @@ function AboutPage({ pageSet, currentPage }) {
                             fontWeight={400}
                             textAlign={"left"}
                         >
-                            Hybrid Matching (Semantic + Rule-based)
+                            <Text as="span" fontWeight={600}>Reducer:</Text> Structures and dedupes noisy records.
                         </Text>
-
                     </Box>
+
                     <Box
-                        height={"10%"}
                         width={"100%"}
                         display={"flex"}
                         justifyContent={"left"}
@@ -652,12 +678,24 @@ function AboutPage({ pageSet, currentPage }) {
                         flexDirection={"row"}
                         gap={2}
                     >
-                        <Check
-                            size={25}
-                            color="#09B285"
-                            strokeWidth={1.5}
-                        />
-
+                        <Text
+                            fontFamily={"Poppins"}
+                            color={"white"}
+                            fontSize={"15px"}
+                            fontWeight={600}
+                            textAlign={"left"}
+                            minWidth="20px"
+                        >
+                            3.
+                        </Text>
+                        <Text
+                            fontFamily={"Poppins"}
+                            color={"white"}
+                            fontSize={"15px"}
+                            fontWeight={600}
+                            textAlign={"left"}
+                        >
+                            Summarizer:</Text>
                         <Text
                             fontFamily={"Poppins"}
                             color={"white"}
@@ -665,12 +703,11 @@ function AboutPage({ pageSet, currentPage }) {
                             fontWeight={400}
                             textAlign={"left"}
                         >
-                            Personalized Outreach Generation
+                            LLM compresses signals into clean bios.
                         </Text>
-
                     </Box>
+
                     <Box
-                        height={"10%"}
                         width={"100%"}
                         display={"flex"}
                         justifyContent={"left"}
@@ -678,12 +715,24 @@ function AboutPage({ pageSet, currentPage }) {
                         flexDirection={"row"}
                         gap={2}
                     >
-                        <Check
-                            size={25}
-                            color="#09B285"
-                            strokeWidth={1.5}
-                        />
-
+                        <Text
+                            fontFamily={"Poppins"}
+                            color={"white"}
+                            fontSize={"15px"}
+                            fontWeight={600}
+                            textAlign={"left"}
+                            minWidth="20px"
+                        >
+                            4.
+                        </Text>
+                        <Text
+                            fontFamily={"Poppins"}
+                            color={"white"}
+                            fontSize={"15px"}
+                            fontWeight={600}
+                            textAlign={"left"}
+                        >
+                            Embedder:</Text>
                         <Text
                             fontFamily={"Poppins"}
                             color={"white"}
@@ -691,12 +740,11 @@ function AboutPage({ pageSet, currentPage }) {
                             fontWeight={400}
                             textAlign={"left"}
                         >
-                            FastAPI + React Powered
+                            Converts bios into vectors for search.
                         </Text>
-
                     </Box>
+
                     <Box
-                        height={"10%"}
                         width={"100%"}
                         display={"flex"}
                         justifyContent={"left"}
@@ -704,12 +752,24 @@ function AboutPage({ pageSet, currentPage }) {
                         flexDirection={"row"}
                         gap={2}
                     >
-                        <Check
-                            size={25}
-                            color="#09B285"
-                            strokeWidth={1.5}
-                        />
-
+                        <Text
+                            fontFamily={"Poppins"}
+                            color={"white"}
+                            fontSize={"15px"}
+                            fontWeight={600}
+                            textAlign={"left"}
+                            minWidth="20px"
+                        >
+                            5.
+                        </Text>
+                        <Text
+                            fontFamily={"Poppins"}
+                            color={"white"}
+                            fontSize={"15px"}
+                            fontWeight={600}
+                            textAlign={"left"}
+                        >
+                            Matcher:</Text>
                         <Text
                             fontFamily={"Poppins"}
                             color={"white"}
@@ -717,50 +777,291 @@ function AboutPage({ pageSet, currentPage }) {
                             fontWeight={400}
                             textAlign={"left"}
                         >
-                            Ethical Data Handling & Compliance
+                            Hybrid scoring returns prioritized investor lists.
                         </Text>
-
                     </Box>
+
+                    {/* Q&A Section */}
                     <Box
-                        height={"10%"}
                         width={"100%"}
                         display={"flex"}
                         justifyContent={"left"}
-                        alignItems={"left"}
-                        flexDirection={"row"}
+                        alignItems={"flex-start"}
+                        flexDirection={"column"}
                         gap={2}
+                        mt={4}
                     >
-                        <Check
-                            size={25}
-                            color="#09B285"
-                            strokeWidth={1.5}
-                        />
-
                         <Text
                             fontFamily={"Poppins"}
                             color={"white"}
                             fontSize={"15px"}
+                            fontWeight={600}
+                            textAlign={"left"}
+                        >
+                            Why multi-layer agents?
+                        </Text>
+                        <Text
+                            fontFamily={"Poppins"}
+                            color={"white"}
+                            fontSize={"14px"}
                             fontWeight={400}
                             textAlign={"left"}
                         >
-                            Learning Feedback Loop
+                            Layered agents allow independent scaling and targeted improvements — summarizers can be upgraded without touching the collector or vector store.
                         </Text>
-
                     </Box>
-
-
                 </Box>
             </Box>
 
+            {/* Team Section */}
             <Box
-                height="20%"
+                width={"100%"}
+                display={"flex"}
+                justifyContent={"center"}
+                alignItems={"center"}
+                flexDirection={"column"}
+                gap={6}
+            >
+                {/* Team Header */}
+                <Box
+                    width={"90%"}
+                    display={"flex"}
+                    justifyContent={"flex-start"}
+                    alignItems={"flex-start"}
+                    flexDirection={"column"}
+                    gap={2}
+                >
+                    <Text
+                        fontFamily={"Poppins"}
+                        color={"white"}
+                        fontSize={"22px"}
+                        fontWeight={500}
+                        textAlign={"left"}
+                    >
+                        Team
+                    </Text>
+                    <Text
+                        fontFamily={"Poppins"}
+                        color={"#B8BCC8"}
+                        fontSize={"15px"}
+                        fontWeight={400}
+                        textAlign={"left"}
+                    >
+                        A compact team focused on product, ML, and growth.
+                    </Text>
+                </Box>
+
+                {/* Team Carousel Container */}
+                <Box
+                    width={"90%"}
+                    position="relative"
+                    display={"flex"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                >
+                    {/* Left Arrow */}
+                    <Button
+                        position="absolute"
+                        left="-20px"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        zIndex={10}
+                        backgroundColor="rgba(255, 255, 255, 0.9)"
+                        borderRadius="50%"
+                        width="40px"
+                        height="40px"
+                        minWidth="40px"
+                        padding={0}
+                        onClick={scrollTeamLeft}
+                        disabled={teamScrollPosition <= 0}
+                        opacity={teamScrollPosition <= 0 ? 0.5 : 1}
+                        _hover={{
+                            backgroundColor: "white",
+                            transform: "translateY(-50%) scale(1.1)"
+                        }}
+                        transition="all 0.2s ease"
+                    >
+                        <ChevronLeft size={20} color="#0056E6" />
+                    </Button>
+
+                    {/* Team Tiles Container */}
+                    <Box
+                        width="100%"
+                        overflow="hidden"
+                        borderRadius="10px"
+                    >
+                        <Box
+                            display="flex"
+                            flexDirection="row"
+                            gap={4}
+                            transition="transform 0.3s ease"
+                            style={{
+                                transform: `translateX(-${teamScrollPosition}px)`
+                            }}
+                        >
+                            {teamMembers.map((member, index) => (
+                                <TeamTile
+                                    key={index}
+                                    name={member.name}
+                                    role={member.role}
+                                    height="200px"
+                                />
+                            ))}
+                        </Box>
+                    </Box>
+
+                    {/* Right Arrow */}
+                    <Button
+                        position="absolute"
+                        right="-20px"
+                        top="50%"
+                        transform="translateY(-50%)"
+                        zIndex={10}
+                        backgroundColor="rgba(255, 255, 255, 0.9)"
+                        borderRadius="50%"
+                        width="40px"
+                        height="40px"
+                        minWidth="40px"
+                        padding={0}
+                        onClick={scrollTeamRight}
+                        disabled={teamScrollPosition >= (teamMembers.length - 3) * 320}
+                        opacity={teamScrollPosition >= (teamMembers.length - 3) * 320 ? 0.5 : 1}
+                        _hover={{
+                            backgroundColor: "white",
+                            transform: "translateY(-50%) scale(1.1)"
+                        }}
+                        transition="all 0.2s ease"
+                    >
+                        <ChevronRight size={20} color="#0056E6" />
+                    </Button>
+                </Box>
+            </Box>
+
+            {/* FAQ Section */}
+            <Box
+                width={"100%"}
+                display={"flex"}
+                justifyContent={"center"}
+                alignItems={"center"}
+                flexDirection={"column"}
+                gap={6}
+            >
+                {/* FAQ Header */}
+                <Box
+                    width={"90%"}
+                    display={"flex"}
+                    justifyContent={"flex-start"}
+                    alignItems={"flex-start"}
+                    flexDirection={"column"}
+                    gap={2}
+                >
+                    <Text
+                        fontFamily={"Poppins"}
+                        color={"white"}
+                        fontSize={"22px"}
+                        fontWeight={500}
+                        textAlign={"left"}
+                    >
+                        FAQ
+                    </Text>
+                </Box>
+
+                {/* FAQ Tiles Grid - 2x2 Layout */}
+                <Box
+                    width={"90%"}
+                    display={"flex"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    flexDirection={"column"}
+                    gap={4}
+                >
+                    {/* First Row of FAQ Tiles */}
+                    <Box
+                        width={"100%"}
+                        display={"flex"}
+                        justifyContent={"center"}
+                        alignItems={"flex-start"}
+                        flexDirection={"row"}
+                        gap={4}
+                    >
+                        <Box
+                            width={"50%"}
+                            display={"flex"}
+                            justifyContent={"center"}
+                            alignItems={"center"}
+                            flexDirection={"column"}
+                        >
+                            <FAQTile
+                                title={faqData[0].title}
+                                description={faqData[0].description}
+                                height="150px"
+                            />
+                        </Box>
+
+                        <Box
+                            width={"50%"}
+                            display={"flex"}
+                            justifyContent={"center"}
+                            alignItems={"center"}
+                            flexDirection={"column"}
+                        >
+                            <FAQTile
+                                title={faqData[1].title}
+                                description={faqData[1].description}
+                                height="150px"
+                            />
+                        </Box>
+                    </Box>
+
+                    {/* Second Row of FAQ Tiles */}
+                    <Box
+                        width={"100%"}
+                        display={"flex"}
+                        justifyContent={"center"}
+                        alignItems={"flex-start"}
+                        flexDirection={"row"}
+                        gap={4}
+                    >
+                        <Box
+                            width={"50%"}
+                            display={"flex"}
+                            justifyContent={"center"}
+                            alignItems={"center"}
+                            flexDirection={"column"}
+                        >
+                            <FAQTile
+                                title={faqData[2].title}
+                                description={faqData[2].description}
+                                height="150px"
+                            />
+                        </Box>
+
+                        <Box
+                            width={"50%"}
+                            display={"flex"}
+                            justifyContent={"center"}
+                            alignItems={"center"}
+                            flexDirection={"column"}
+                        >
+                            <FAQTile
+                                title={faqData[3].title}
+                                description={faqData[3].description}
+                                height="150px"
+                            />
+                        </Box>
+                    </Box>
+                </Box>
+            </Box>
+
+            {/* Call to Action Section */}
+            <Box
                 width={"100%"}
                 display={"flex"}
                 justifyContent={"center"}
                 alignItems={"flex-start"}
+                mb={8} // Added margin bottom for better spacing at page end
             >
                 <Box
-                    height={"80%"}
                     width={"90%"}
                     display={"flex"}
                     justifyContent={"center"}
@@ -769,15 +1070,15 @@ function AboutPage({ pageSet, currentPage }) {
                     borderRadius={"10px"}
                     boxShadow={"0 8px 32px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.1)"}
                     gap={10}
+                    py={6}
                 >
                     <Box
-                        height={"100%"}
                         width={"50%"}
                         display={"flex"}
                         justifyContent={"center"}
                         alignItems={"center"}
                     >
-                        <Text                                             // text Want to find investors for your Startup?
+                        <Text
                             fontFamily="Poppins"
                             color="black"
                             fontSize="20px"
@@ -786,13 +1087,9 @@ function AboutPage({ pageSet, currentPage }) {
                         >
                             Want to find investors for your Startup or start Funding?
                         </Text>
-
-
                     </Box>
 
-
                     <Box
-                        height={"100%"}
                         width={"50%"}
                         display={"flex"}
                         justifyContent={"center"}
@@ -800,7 +1097,7 @@ function AboutPage({ pageSet, currentPage }) {
                         flexDirection={"column"}
                         gap={1}
                     >
-                        <Text                                             // text Let us help you!
+                        <Text
                             fontFamily={"Poppins"}
                             color={"black"}
                             fontSize={"16px"}
@@ -809,7 +1106,7 @@ function AboutPage({ pageSet, currentPage }) {
                         >
                             Let us help you!
                         </Text>
-                        <Button                                               //get started button
+                        <Button
                             width={"200px"}
                             backgroundColor={"#004ECA"}
                             color={"white"}
@@ -820,18 +1117,16 @@ function AboutPage({ pageSet, currentPage }) {
                             alignContent={"center"}
                             fontSize={"16px"}
                             onClick={() => { pageSet(0) }}
-
                             _hover={{
                                 backgroundColor: "#E5C48A",
                                 color: "#011F3C",
                             }}
-                            transition="all 0.5s ease">    Get Started  </Button>
-
-
+                            transition="all 0.5s ease"
+                        >
+                            Get Started
+                        </Button>
                     </Box>
                 </Box>
-
-
             </Box>
         </Box>
     );

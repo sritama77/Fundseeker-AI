@@ -4,41 +4,87 @@ import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, F
 import { useState, useEffect } from "react"
 import { Trash2 } from 'lucide-react';
 
-const initialItems = [
-    {
-        id: 1,
-        name: "Maarten Goossens",
-        title: "Founder & Partner",
-        company: "Anterro Capital",
-        website: "https://www.anterracapital.com/",
-        linkedin: "https://www.linkedin.com/in/maarten-goossens-407962a",
-        email: "mtrgoossens@gmail.com",
-        facebook: "http://www.facebook.com/maarten.goossens.56",
-        twitter: "http://twitter.com/mtrgoossens",
-        location: "Amsterdam"
-    },
-    {
-        id: 2,
-        name: "Adam Draper",
-        title: "Founder and Managing Director",
-        company: "Boost VC",
-        website: "https://boost.vc/",
-        linkedin: "https://www.linkedin.com/in/adraper",
-        email: "adam@boost.vc",
-        facebook: "https://facebook.com/adam172draper",
-        twitter: "https://twitter.com/adamdraper",
-        location: "Atherton"
-    },
-    // ... (rest of the data remains the same)
-];
-
 function ViewDatabaseComponent({ pageSet, currentPage }) {
-    const [items, setItems] = useState(initialItems);
+    const [items, setItems] = useState([]);
+    const [loading, setLoading] = useState(true);
 
+    // Load saved connections from localStorage on component mount
+    useEffect(() => {
+        try {
+            const savedConnections = JSON.parse(localStorage.getItem('savedConnections') || '[]');
+            setItems(savedConnections);
+        } catch (error) {
+            console.error('Error loading saved connections:', error);
+            setItems([]);
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Function to handle permanent deletion
     const handleDelete = (id) => {
-        setItems(items.filter(item => item.id !== id));
-        toast.success('Connection deleted successfully');
+        try {
+            // Remove item from state
+            const updatedItems = items.filter(item => item.id !== id);
+            setItems(updatedItems);
+            
+            // Update localStorage
+            localStorage.setItem('savedConnections', JSON.stringify(updatedItems));
+            
+            // Show success message
+            toast.success('Connection deleted successfully');
+        } catch (error) {
+            console.error('Error deleting connection:', error);
+            toast.error('Failed to delete connection');
+        }
     };
+
+    // Function to refresh data (useful if called from other components)
+    const refreshData = () => {
+        try {
+            const savedConnections = JSON.parse(localStorage.getItem('savedConnections') || '[]');
+            setItems(savedConnections);
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+        }
+    };
+
+    // Listen for storage changes (in case data is updated from other tabs/components)
+    useEffect(() => {
+        const handleStorageChange = (e) => {
+            if (e.key === 'savedConnections') {
+                refreshData();
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        
+        // Also listen for custom events within the same tab
+        const handleCustomRefresh = () => {
+            refreshData();
+        };
+        
+        window.addEventListener('refreshSavedConnections', handleCustomRefresh);
+
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+            window.removeEventListener('refreshSavedConnections', handleCustomRefresh);
+        };
+    }, []);
+
+    if (loading) {
+        return (
+            <Box
+                height={"90%"}
+                width={"95%"}
+                display={"flex"}
+                alignItems="center"
+                justifyContent="center"
+            >
+                <Text>Loading saved connections...</Text>
+            </Box>
+        );
+    }
 
     return (
         <Box
@@ -57,78 +103,96 @@ function ViewDatabaseComponent({ pageSet, currentPage }) {
                 textAlign={"left"}
             >Find your saved connections</Text>
 
-            {/* Table container with both horizontal and vertical scroll */}
-            <Box
-                flex="1"
-                overflowY="auto"
-                overflowX="auto"
-                border="1px solid"
-                borderColor="gray.200"
-                borderRadius="md"
-            >
-                <Table.Root size="sm" variant="outline">
-                    <Table.Header>
-                        <Table.Row>
-                            <Table.ColumnHeader fontSize="12px">Name</Table.ColumnHeader>
-                            <Table.ColumnHeader fontSize="12px">Title</Table.ColumnHeader>
-                            <Table.ColumnHeader fontSize="12px">Company</Table.ColumnHeader>
-                            <Table.ColumnHeader fontSize="12px">Website</Table.ColumnHeader>
-                            <Table.ColumnHeader fontSize="12px">LinkedIn</Table.ColumnHeader>
-                            <Table.ColumnHeader fontSize="12px">Email</Table.ColumnHeader>
-                            <Table.ColumnHeader fontSize="12px">Facebook</Table.ColumnHeader>
-                            <Table.ColumnHeader fontSize="12px">Twitter</Table.ColumnHeader>
-                            <Table.ColumnHeader fontSize="12px">Location</Table.ColumnHeader>
-                            <Table.ColumnHeader fontSize="12px" textAlign="center">Action</Table.ColumnHeader>
-                        </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                        {items.map((item) => (
-                            <Table.Row key={item.id}>
-                                <Table.Cell fontSize="12px">{item.name}</Table.Cell>
-                                <Table.Cell fontSize="12px">{item.title}</Table.Cell>
-                                <Table.Cell fontSize="12px">{item.company}</Table.Cell>
-                                <Table.Cell fontSize="12px">
-                                    <a href={item.website} target="_blank" rel="noopener noreferrer" style={{ color: "#0066cc", textDecoration: "underline" }}>
-                                        Website
-                                    </a>
-                                </Table.Cell>
-                                <Table.Cell fontSize="12px">
-                                    <a href={item.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: "#0066cc", textDecoration: "underline" }}>
-                                        LinkedIn
-                                    </a>
-                                </Table.Cell>
-                                <Table.Cell fontSize="12px">{item.email}</Table.Cell>
-                                <Table.Cell fontSize="12px">
-                                    <a href={item.facebook} target="_blank" rel="noopener noreferrer" style={{ color: "#0066cc", textDecoration: "underline" }}>
-                                        Facebook
-                                    </a>
-                                </Table.Cell>
-                                <Table.Cell fontSize="12px">
-                                    <a href={item.twitter} target="_blank" rel="noopener noreferrer" style={{ color: "#0066cc", textDecoration: "underline" }}>
-                                        Twitter
-                                    </a>
-                                </Table.Cell>
-                                <Table.Cell fontSize="12px">{item.location}</Table.Cell>
-                                <Table.Cell textAlign="center">
-                                    <Button
-                                        size="xs"
-                                        color="red"
-                                        onClick={() => handleDelete(item.id)}
-                                        _hover={{
-                                            bg: "red.500",
-                                            color: "white"
-
-                                        }}
-                                        style={{ cursor: "pointer" }}
-                                    >
-                                        <Trash2 size={16} strokeWidth={1.5} />
-                                    </Button>
-                                </Table.Cell>
+            {items.length === 0 ? (
+                <Box
+                    flex="1"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                    minHeight="400px"
+                >
+                    <Text color="gray.500" fontSize="18px" textAlign="center">
+                        No saved connections yet.<br />
+                        Start by saving connections from your suitable matches!
+                    </Text>
+                </Box>
+            ) : (
+                /* Table container with both horizontal and vertical scroll */
+                <Box
+                    flex="1"
+                    overflowY="auto"
+                    overflowX="auto"
+                    border="1px solid"
+                    borderColor="gray.200"
+                    borderRadius="md"
+                >
+                    <Table.Root size="sm" variant="outline">
+                        <Table.Header>
+                            <Table.Row>
+                                <Table.ColumnHeader fontSize="12px">Name</Table.ColumnHeader>
+                                <Table.ColumnHeader fontSize="12px">Title</Table.ColumnHeader>
+                                <Table.ColumnHeader fontSize="12px">Company</Table.ColumnHeader>
+                                <Table.ColumnHeader fontSize="12px">Website</Table.ColumnHeader>
+                                <Table.ColumnHeader fontSize="12px">Social Media</Table.ColumnHeader>
+                                <Table.ColumnHeader fontSize="12px">Email</Table.ColumnHeader>
+                                <Table.ColumnHeader fontSize="12px">Location</Table.ColumnHeader>
+                                <Table.ColumnHeader fontSize="12px">Saved Date</Table.ColumnHeader>
+                                <Table.ColumnHeader fontSize="12px" textAlign="center">Action</Table.ColumnHeader>
                             </Table.Row>
-                        ))}
-                    </Table.Body>
-                </Table.Root>
-            </Box>
+                        </Table.Header>
+                        <Table.Body>
+                            {items.map((item) => (
+                                <Table.Row key={item.id}>
+                                    <Table.Cell fontSize="12px">{item.name}</Table.Cell>
+                                    <Table.Cell fontSize="12px">{item.title || 'N/A'}</Table.Cell>
+                                    <Table.Cell fontSize="12px">{item.company}</Table.Cell>
+                                    <Table.Cell fontSize="12px">
+                                        {item.website ? (
+                                            <a href={item.website} target="_blank" rel="noopener noreferrer" style={{ color: "#0066cc", textDecoration: "underline" }}>
+                                                Website
+                                            </a>
+                                        ) : (
+                                            <Text color="gray.400">N/A</Text>
+                                        )}
+                                    </Table.Cell>
+                                    <Table.Cell fontSize="12px">
+                                        {item.linkedin ? (
+                                            <a href={item.linkedin} target="_blank" rel="noopener noreferrer" style={{ color: "#0066cc", textDecoration: "underline" }}>
+                                                LinkedIn
+                                            </a>
+                                        ) : (
+                                            <Text color="gray.400">N/A</Text>
+                                        )}
+                                    </Table.Cell>
+                                    <Table.Cell fontSize="12px">{item.email}</Table.Cell>
+                                    <Table.Cell fontSize="12px">{item.location}</Table.Cell>
+                                    <Table.Cell fontSize="12px">
+                                        {item.savedAt ? new Date(item.savedAt).toLocaleDateString() : 'N/A'}
+                                    </Table.Cell>
+                                    <Table.Cell textAlign="center">
+                                        <Button
+                                            size="xs"
+                                            color="red"
+                                            onClick={() => handleDelete(item.id)}
+                                            _hover={{
+                                                bg: "red.500",
+                                                color: "white"
+
+                                            }}
+                                            style={{ cursor: "pointer" }}
+                                        >
+                                            <Trash2 size={16} strokeWidth={1.5} />
+                                        </Button>
+                                    </Table.Cell>
+                                </Table.Row>
+                            ))}
+                        </Table.Body>
+                    </Table.Root>
+                </Box>
+            )}
         </Box>
     )
 }

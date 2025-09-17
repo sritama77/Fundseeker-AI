@@ -81,7 +81,7 @@ const Navbar = ({ currentPage, pageSet }) => {
 
     // All Chakra UI props have been converted to standard inline CSS styles.
     return (
-        <div style={{ height: "10%", width: "100%", display: "flex", justifyContent: "flex-start", alignItems: "center" }}>
+        <div style={{ height: "80px", width: "100%", display: "flex", justifyContent: "flex-start", alignItems: "center",position: "fixed", zIndex: 1000, left: 0, top: 0}}>
             {/* Inject the styles into the component */}
             <style>{navStyles}</style>
 

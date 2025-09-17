@@ -24,7 +24,7 @@ function StartMatchingPage({ pageSet, currentPage }) {
             justifyContent={"right"}
             alignItems={"center"}
             flexDirection={"row"}
-            bg={"linear-gradient(to right, #0054D8 70%, #001B60 100%)"}
+            bg={"linear-gradient(to right, #0054D8 50%, #001B60 100%)"}
             gap={30}
         >
             <SideNavbar currentPage={ToggleComponent} pageSet={setToggleComponent} LogoutRedirect={pageSet} />

@@ -18,7 +18,7 @@ function ProfileInvestorSecond({ pageSet }) {
         TicketType, setTicketType, FirmName, setFirmName, InvestorWebsite, setInvestorWebsite, InvestorLocation, setInvestorLocation,
         InvestorSocialMedia, setInvestorSocialMedia, SelectedIndustries, setSelectedIndustries, SelectedStages, setSelectedStages,
         Password, setPassword, ConfirmPassword, setConfirmPassword, Username, setUsername, handleCheckSizeToggle, removeCheckSize, handleTicketTypeToggle, removeTicketType,
-        CompanyEmail, setCompanyEmail
+        CompanyEmail, setCompanyEmail, InvestorTitle, setInvestorTitle,
     } = SignupInvestorStore()
 
     const validateForm = () => {
@@ -54,6 +54,7 @@ function ProfileInvestorSecond({ pageSet }) {
                "Password": Password,
                "ConfirmPassword": ConfirmPassword,
                "FirmName": FirmName,
+               "InvestorTitle": InvestorTitle,
                "InvestorWebsite": InvestorWebsite,
                "InvestorLocation": InvestorLocation,
                "InvestorSocialMedia": InvestorSocialMedia,
