@@ -25,7 +25,7 @@ def LLM():
 # Configure APIs - you can choose which one to us
     data = request.json
     if data:
-        User_id = data["UserId"] 
+        User_id = data["UserId"]
         isStartup = data["isStartup"]
 
     USE_GEMINI = True  # Set to False to use OpenAI instead
@@ -115,7 +115,7 @@ def LLM():
         # Extract key information matching your schema
         firm_name = safe_get('FirmName', 'Unknown Firm')
         name = safe_get('Name', 'Unknown Investor')
-        title = safe_get('Title', '')
+        title = safe_get('InvestorTitle', '')
         company = safe_get('Company', firm_name)
         bio_thesis = safe_get('BioThesis', 'Not available')
         investment_focus = safe_get('investment_focus', safe_get('SelectedIndustries', 'Not specified'))
@@ -675,7 +675,7 @@ def LLM():
                 inv_email=str(investor.get("CompanyEmail","Not Available"))
                 inv_company=str(investor.get("FirmName","Unknown Company"))
                 investor_location=str(investor.get("InvestorLocation","__"))
-                investor_title=""
+                investor_title=str(investor.get("InvestorTitle",""))
                 save_match_to_db(matches_collection, User_id, investor_id=investor_id,overall_score=overall_score,scorecard=scorecard)                        
                 result.append({"Start_Name":startup_name,
                         "Investor_Name":investor_name,
@@ -718,7 +718,7 @@ def LLM():
                     inv_email=str(investor.get("CompanyEmail","Not Available"))
                     inv_company=str(investor.get("FirmName","Unknown Company"))
                     investor_location=str(investor.get("InvestorLocation","__"))
-                    investor_title=""
+                    investor_title=str(investor.get("InvestorTitle",""))
                     
                     save_match_to_db(matches_collection, User_id, investor_id=investor_id,overall_score=overall_score,scorecard=scorecard)                        
                     result.append({"Start_Name":startup_name,

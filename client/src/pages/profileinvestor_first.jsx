@@ -17,7 +17,7 @@ function ProfileInvestorFirst({ pageSet }) {
 
     const {FirmName, setFirmName, InvestorWebsite, setInvestorWebsite, InvestorLocation, setInvestorLocation,
         InvestorSocialMedia, setInvestorSocialMedia, SelectedIndustries, setSelectedIndustries, SelectedStages, setSelectedStages,
-        handleIndustryToggle,removeIndustry,handleStageToggle,removeStage
+        handleIndustryToggle,removeIndustry,handleStageToggle,removeStage,InvestorTitle, setInvestorTitle,
     }=SignupInvestorStore()
 
     const industryOptions = [
@@ -242,8 +242,8 @@ function ProfileInvestorFirst({ pageSet }) {
                                     </Field.Label>
                                     <Input
                                         placeholder="e.g. Partner, Angel Investor"
-                                        value={InvestorWebsite}
-                                        onChange={(e) => setInvestorWebsite(e.target.value)}
+                                        value={InvestorTitle}
+                                        onChange={(e) => setInvestorTitle(e.target.value)}
                                         height="100%"
                                         width="100%"
                                         bgColor="rgba(255, 255, 255, 0.1)"

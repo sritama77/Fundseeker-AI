@@ -2,7 +2,7 @@
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText } from "@chakra-ui/react";
 import { useState, useEffect } from "react"
-import { CircleUserRound, Search, BarChart3, Puzzle, MessageSquare, Check, CircleSmall, Settings, Database, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CircleUserRound, Search, BarChart3, Puzzle, MessageSquare, Check, CircleSmall, Settings,ServerCog , Database, ChevronLeft, ChevronRight, AudioWaveform, Handshake,Infinity } from 'lucide-react';
 import Navbar from '../components/ui/navbar';
 
 // Tilting Tile Component (for Core Features and FAQ)
@@ -498,7 +498,7 @@ function AboutPage({ pageSet, currentPage }) {
                             flexDirection={"column"}
                         >
                             <TiltingTile
-                                icon={Search}
+                                icon={AudioWaveform }
                                 title="Multi‑Agent Pipeline"
                                 description="Collector → Reducer → Summarizer → Embedder → Matcher"
                                 height="110px"
@@ -513,7 +513,7 @@ function AboutPage({ pageSet, currentPage }) {
                             flexDirection={"column"}
                         >
                             <TiltingTile
-                                icon={BarChart3}
+                                icon={Puzzle}
                                 title="Hybrid Matching"
                                 description="Semantic + rule filters (stage, sector, geography, check size)"
                                 height="110px"
@@ -528,7 +528,7 @@ function AboutPage({ pageSet, currentPage }) {
                             flexDirection={"column"}
                         >
                             <TiltingTile
-                                icon={Puzzle}
+                                icon={Database }
                                 title="Ethical Data"
                                 description="Public sources & API-first approach; no restricted scraping"
                                 height="110px"
@@ -553,7 +553,7 @@ function AboutPage({ pageSet, currentPage }) {
                             flexDirection={"column"}
                         >
                             <TiltingTile
-                                icon={MessageSquare}
+                                icon={Handshake }
                                 title="Personalized Outreach"
                                 description="Editable GPT-powered templates for every match"
                                 height="110px"
@@ -568,7 +568,7 @@ function AboutPage({ pageSet, currentPage }) {
                             flexDirection={"column"}
                         >
                             <TiltingTile
-                                icon={Settings}
+                                icon={Infinity }
                                 title="Learning Loop"
                                 description="Response signals continuously improve relevance"
                                 height="110px"
@@ -583,7 +583,7 @@ function AboutPage({ pageSet, currentPage }) {
                             flexDirection={"column"}
                         >
                             <TiltingTile
-                                icon={Database}
+                                icon={ServerCog }
                                 title="Cloud-ready"
                                 description="Qdrant-backed semantic search with metadata filters"
                                 height="110px"

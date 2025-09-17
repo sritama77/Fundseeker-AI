@@ -15,6 +15,7 @@ const SignupInvestorStore = create((set) => ({
     SyndicationPreference: "",
     TicketType: [],
     CompanyEmail: "",
+    InvestorTitle: "",
 
     setPassword: (data) => set({ Password: data }),
     setConfirmPassword: (data) => set({ ConfirmPassword: data }),
@@ -30,6 +31,7 @@ const SignupInvestorStore = create((set) => ({
     setSyndicationPreference: (data) => set({ SyndicationPreference: data }),
     setTicketType: (data) => set({ TicketType: data }),
     setCompanyEmail: (data) => set({CompanyEmail: data}),
+    setInvestorTitle: (data) => set({InvestorTitle:data}),
 
     // Check Size Range methods
     handleCheckSizeToggle: (size) => set((state) => ({
