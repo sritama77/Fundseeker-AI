@@ -550,7 +550,7 @@ def LLM():
         startup_collection, investor_collection, matches_collection, client = get_database_collections()
         
         if matches_collection is not None:
-            print("❌ Failed to connect to database")
+            # print("❌ Failed to connect to database")
             return []
         if client:
             try:
@@ -560,15 +560,32 @@ def LLM():
                         {"startup_id": startup_id, "overall_score": {"$gt": 0}}
                     ).sort("overall_score", -1).limit(top_k))
                 
-                print(f"🎯 Top {len(matches)} matches for startup {startup_id}:")
-                
+                investor_profiles=[]
+                if investor_collection is None:
+                    return
                 for i, match in enumerate(matches, 1):
-                    print(f"\n{i}. {match['investor_name']} (Score: {match['overall_score']})")
-                    if 'scorecard' in match:
-                        for factor, data in match['scorecard'].items():
-                            print(f"   {factor}: {data['score']} - {data['justification']}")
+                    investor_id = match.get("investor_id")
+                    investor=investor_collection.find_one({"_id":investor_id})
+                    if investor:
+                        startup_name=match["startup_name"]
+                        investor_name=match["investor_name"]
+                        inv_email=str(investor.get("CompanyEmail","Not Available"))
+                        inv_company=str(investor.get("FirmName","Unknown Company"))
+                        investor_location=str(investor.get("InvestorLocation","__"))
+                        investor_title=str(investor.get("InvestorTitle",""))
+                        investor_website=str(investor.get("InvestorWebsite",""))
+                        social_link=str(investor.get("InvestorSocialMedia",""))
+                    investor_profiles.append({"Startup_name":startup_name,
+                            "Investor_Name":investor_name,
+                            "Investor_Company":inv_company,
+                            "Investor_Email":inv_email,
+                            "Investor_Location":investor_location,
+                            "Investor_Title":investor_title,
+                            "Investor_Website":investor_website,
+                            "Investor_Social_Media":social_link
+                            })
                 
-                return matches
+                return investor_profiles
             
             finally:
                 pass
@@ -580,7 +597,7 @@ def LLM():
         startup_collection, investor_collection, matches_collection, client = get_database_collections()
         
         if matches_collection is not None:
-            print("❌ Failed to connect to database")
+            # print("❌ Failed to connect to database")
             return []
         
         try:
@@ -588,9 +605,7 @@ def LLM():
             if matches_collection is not None:
                 matches = list(matches_collection.find(
                     {"investor_id": investor_id, "overall_score": {"$gt": 0}}
-                ).sort("overall_score", -1).limit(top_k))
-            
-            print(f"🎯 Top {len(matches)} matches for investor {investor_id}:")
+                ).sort("overall_score", -1).limit(top_k))        
             
             for i, match in enumerate(matches, 1):
                 print(f"\n{i}. {match['startup_name']} (Score: {match['overall_score']})")
@@ -669,7 +684,6 @@ def LLM():
             result = []
             for investor in investors:                
                 investor_name = investor.get("Name", investor.get("Username", "Unknown Investor"))
-                # print(f"🚀 Running Demo Analysis: {startup_name} x {investor_name}")
                 overall_score, scorecard = analyze_startup_investor_match(Startup, investor)                     
                 investor_id = str(investor.get("_id", "demo_investor"))
                 inv_email=str(investor.get("CompanyEmail","Not Available"))
@@ -721,15 +735,15 @@ def LLM():
                     investor_title=str(investor.get("InvestorTitle",""))
                     
                     save_match_to_db(matches_collection, User_id, investor_id=investor_id,overall_score=overall_score,scorecard=scorecard)                        
-                    result.append({"Start_Name":startup_name,
-                            "Investor_Name":investor_name,
-                            "Investor_Company":inv_company,
-                            "Investor_Email":inv_email,
-                            "Investor_Location":investor_location,
-                            "Investor_Title":investor_title,
-                            "Overall_Score":overall_score,
-                            "Scorecard":scorecard})
-                return jsonify({"Success":True,"result":result})           
+                #     result.append({"Start_Name":startup_name,
+                #             "Investor_Name":investor_name,
+                #             "Investor_Company":inv_company,
+                #             "Investor_Email":inv_email,
+                #             "Investor_Location":investor_location,
+                #             "Investor_Title":investor_title,
+                #             "Overall_Score":overall_score,
+                #             "Scorecard":scorecard})
+                # return jsonify({"Success":True,"result":result})           
             else:
                 investor = investor_collection.find_one({"_id": ObjectId(User_id)})
                 print(investor)
@@ -752,23 +766,27 @@ def LLM():
                     investor_title=""
                     
                     save_match_to_db(matches_collection, startup_id, investor_id=User_id,overall_score=overall_score,scorecard=scorecard)                        
-                    result.append({"Investor_Name":investor_name,
-                            "Founder_Name":founder_name,
-                            "Startup_Company":startup_company,
-                            "Startup_Email":startup_email,
-                            "Startup_Location":startup_location,
-                            "Overall_Score":overall_score,
-                            "Scorecard":scorecard})
-                return jsonify({"Success":True,"result":result})
+                #     result.append({"Investor_Name":investor_name,
+                #             "Founder_Name":founder_name,
+                #             "Startup_Company":startup_company,
+                #             "Startup_Email":startup_email,
+                #             "Startup_Location":startup_location,
+                #             "Overall_Score":overall_score,
+                #             "Scorecard":scorecard})
+                # return jsonify({"Success":True,"result":result})
         except Exception as e:
             return jsonify({"message":f"bhogoban{e}"})
         finally:
             if client:
                 pass
-    # return create_matches()
-    return create_matches_trial(isStartup)  
-        # Uncomment to process all matchespairs=get_all_startup_investor_pairs(startup_profile,investor_collection)  (be careful with large datasets!)
-        # process_all_matches(limit_pairs=50)  # Limit for testing
-        
-        # Uncomment to query specific matches
-        # get_top_matches_for_startup("your_startup_id", top_k=5)
+
+    def main(isStartup:bool):
+        create_matches_trial(isStartup)
+        if isStartup:
+            result=get_top_matches_for_startup(User_id,5)
+        else:
+            result=get_top_matches_for_investor(User_id,5)
+
+        return jsonify({"Sucess":True,"result":result})
+    
+    return main(isStartup)  
