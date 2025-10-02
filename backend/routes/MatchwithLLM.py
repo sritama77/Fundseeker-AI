@@ -230,18 +230,19 @@ def LLM():
     def call_gemini_api(prompt: str) -> Optional[str]:
         """Call Gemini API with the matching prompt."""
         try:
-            model = "gemini-1.5-flash"
+            model = "gemini-2.0-flash-001"
             
             response=Gemclient.models.generate_content(
                 model=model,
                 contents=prompt,
-                config=types.GenerateContentConfigDict({    
-        "temperature": 0.3,
-        "top_p": 0.8,
-        "top_k": 40,
-        "max_output_tokens": 1024,
-    })
-            )                  
+                config={  
+                    "temperature": 0.3,
+                    "top_p": 0.8,
+                    "top_k": 40,
+                    "max_output_tokens": 3000,
+                }
+            )     
+            print(response)             
             if response.text:
                 return response.text.strip()
             
