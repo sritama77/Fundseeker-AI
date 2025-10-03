@@ -316,7 +316,7 @@ def LLM():
 
 
     # --- 7. MAIN MATCHING FUNCTION ---
-    def analyze_startup_investor_match(startup_doc: Dict[str, Any], investor_doc: Dict[str, Any]) -> Tuple[float, Dict[str, Any]]:
+    def analyze_startup_investor_match(startup_doc: Dict[str, Any], investor_doc: Dict[str, Any],WaitTime: int=1) -> Tuple[float, Dict[str, Any]]:
         """
         Analyze a startup-investor pair from MongoDB documents.
         
@@ -347,7 +347,7 @@ def LLM():
             
             if attempt < max_retries - 1:
                 print(f"🔄 Retry {attempt + 1}/{max_retries}")
-                time.sleep(1)
+                time.sleep(WaitTime)  # Wait before retrying
         
         print("❌ Failed to get valid response after retries")
         return 0.0, {}
@@ -609,10 +609,11 @@ def LLM():
                 ).sort("overall_score", -1).limit(top_k))        
             
             for i, match in enumerate(matches, 1):
-                print(f"\n{i}. {match['startup_name']} (Score: {match['overall_score']})")
+                # print(f"\n{i}. {match['startup_name']} (Score: {match['overall_score']})")
                 if 'scorecard' in match:
                     for factor, data in match['scorecard'].items():
-                        print(f"   {factor}: {data['score']} - {data['justification']}")
+                        continue
+                        # print(f"   {factor}: {data['score']} - {data['justification']}")
             
             return matches
         
@@ -716,10 +717,10 @@ def LLM():
         try:
             if isStartup:
                 Startup = startup_collection.find_one({"_id": ObjectId(User_id)})
-                print(Startup)
+                # print(Startup)
                 if investor_collection is not None:
                     investors = list(investor_collection.find({}))
-                    print(investors)
+                    # print(investors)
                 
                 if not Startup or not investors:
                     return jsonify({"message":"❌ No startup or investor data found in database"})
@@ -728,7 +729,7 @@ def LLM():
                 result = []
                 for investor in investors:                
                     investor_name = investor.get("Name", investor.get("Username", "Unknown Investor"))
-                    overall_score, scorecard = analyze_startup_investor_match(startup_doc= Startup,investor_doc= investor)                     
+                    overall_score, scorecard = analyze_startup_investor_match(startup_doc= Startup,investor_doc= investor,WaitTime= 4)                     
                     investor_id = str(investor.get("_id", "demo_investor"))
                     inv_email=str(investor.get("CompanyEmail","Not Available"))
                     inv_company=str(investor.get("FirmName","Unknown Company"))
@@ -747,10 +748,10 @@ def LLM():
                 # return jsonify({"Success":True,"result":result})           
             else:
                 investor = investor_collection.find_one({"_id": ObjectId(User_id)})
-                print(investor)
+                # print(investor)
                 if startup_collection is not None:
                     startups = list(startup_collection.find({}))
-                    print(startups)
+                    # print(startups)
                 
                 if not investor or not startups:
                     return jsonify({"message":"❌ No investor or investor data found in database"})
@@ -758,7 +759,7 @@ def LLM():
                 investor_name = investor.get("Username", "Unknown investor")
                 result = []
                 for startup in startups:                
-                    overall_score, scorecard = analyze_startup_investor_match(investor_doc=investor, startup_doc=startup)                     
+                    overall_score, scorecard = analyze_startup_investor_match(investor_doc=investor, startup_doc=startup,WaitTime= 4)                     
                     startup_id = str(startup.get("_id", "demo_startup"))
                     founder_name=str(startup.get("FounderName","Unknown Founder"))
                     startup_email=str(startup.get("CompanyEmail","Not Available"))
