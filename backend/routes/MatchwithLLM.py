@@ -239,7 +239,7 @@ def LLM():
                     "temperature": 0.3,
                     "top_p": 0.8,
                     "top_k": 40,
-                    "max_output_tokens": 3000,
+                    "max_output_tokens": 2000,
                 }
             )     
             print(response)             
