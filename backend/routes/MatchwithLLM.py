@@ -354,7 +354,6 @@ def LLM():
 
 
     # --- 8. MONGODB OPERATIONS ---
-    # saving the startup-investor match pairs to database ----------
     def save_match_to_db(matches_collection, startup_id: str, investor_id: str,overall_score: float,scorecard: Dict[str, Any]
                         # ,investor_email:str="",investor_location:str="",investor_company:str="",investor_title:str="",
                         # startup_name: str = "", investor_name: str = ""
@@ -364,11 +363,6 @@ def LLM():
         match_document = {
             "startup_id": startup_id,
             "investor_id": investor_id,
-            # "startup_name": startup_name,
-            # "investor_name": investor_name,
-            # "investor_company":investor_company,
-            # "investor_email":investor_email,
-            # "investor_location":investor_location,
             "overall_score": overall_score,
             "scorecard": scorecard,
             "created_at": datetime.utcnow(),
@@ -399,158 +393,13 @@ def LLM():
             return False
 
 
-    def get_all_startup_investor_pairs(startup_profile, investor_collection, limit: int |None=None ):
-        """Generate all possible startup-investor pairs."""
-        
-        startups = startup_profile
-        investors = list(investor_collection.find({}))
-        
-        if limit:        
-            investors = investors[:limit]
-        
-        print(f"📊 Found {startups} startup and {len(investors)} investors")
-        print(f"🎯 Will generate { len(investors)} total pairs")
-        
-        pairs = []
-
-        for investor in investors:
-            pairs.append([startups, investor])
-        
-        return pairs
-
-
-    def get_unprocessed_pairs(startup_collection, investor_collection, matches_collection):
-        """Get pairs that haven't been processed yet."""
-        
-        # Get all processed pairs
-        processed_pairs = set()
-        for match in matches_collection.find({}, {"startup_id": 1, "investor_id": 1}):
-            processed_pairs.add((str(match["startup_id"]), str(match["investor_id"])))
-        
-        # Get all possible pairs
-        all_pairs = get_all_startup_investor_pairs(startup_collection, investor_collection)
-        
-        # Filter unprocessed pairs
-        unprocessed_pairs = []
-        for startup, investor in all_pairs:
-            startup_id = str(startup.get("_id", startup.get("id", "")))
-            investor_id = str(investor.get("_id", investor.get("id", "")))
-            
-            if (startup_id, investor_id) not in processed_pairs:
-                unprocessed_pairs.append((startup, investor))
-        
-        print(f"🔄 Found {len(unprocessed_pairs)} unprocessed pairs out of {len(all_pairs)} total pairs")
-        return unprocessed_pairs
-
-
-    # --- 9. BATCH PROCESSING FUNCTION ---
-    def process_all_matches(limit_pairs: int | None, process_unprocessed_only: bool = True):
-        """Process all startup-investor matches and save to MongoDB."""
-        
-        # Connect to database
-        startup_collection, investor_collection, matches_collection, client = get_database_collections()
-        
-        if not all([startup_collection, investor_collection, matches_collection]):
-            print("❌ Failed to connect to database collections")
-            return
-        
-        try:
-            # Get pairs to process
-            if process_unprocessed_only:
-                pairs_to_process = get_unprocessed_pairs(startup_collection, investor_collection, matches_collection)
-            # else:
-            #     pairs_to_process = get_all_startup_investor_pairs(startup_collection, investor_collection, limit_pairs)
-            
-            if not pairs_to_process:
-                print("✅ No pairs to process!")
-                return
-            
-            if limit_pairs:
-                pairs_to_process = pairs_to_process[:limit_pairs]
-            
-            print(f"🚀 Processing {len(pairs_to_process)} startup-investor pairs")
-            
-            successful_matches = 0
-            failed_matches = 0
-            
-            # Process each pair
-            for startup_doc, investor_doc in tqdm(pairs_to_process, desc="Analyzing Matches"):
-                
-                startup_id = str(startup_doc.get("_id", startup_doc.get("id", "")))
-                investor_id = str(investor_doc.get("_id", investor_doc.get("id", "")))
-                startup_name = startup_doc.get("StartupName", "Unknown Startup")
-                investor_name = investor_doc.get("Name", investor_doc.get("FirmName", "Unknown Investor"))
-                
-                try:
-                    # Analyze the match
-                    overall_score, scorecard = analyze_startup_investor_match(startup_doc, investor_doc)
-                    
-                    if overall_score > 0 and scorecard:
-                        # Save successful match
-                        if save_match_to_db(matches_collection, startup_id,  investor_id,overall_score,scorecard):
-                            successful_matches += 1
-                            
-                            # Show sample results for first few matches
-                            if successful_matches <= 3:
-                                print(f"\n🎯 Sample Match: {startup_name} x {investor_name}")
-                                print(f"Overall score = {overall_score}")
-                                print("Explanation")
-                                print(json.dumps(scorecard, indent=2))
-                        else:
-                            failed_matches += 1
-                    else:
-                        # Save failed match
-                        save_match_to_db(matches_collection, startup_id, investor_id,overall_score,scorecard)
-                        failed_matches += 1
-                
-                except Exception as e:
-                    print(f"❌ Error processing {startup_name} x {investor_name}: {e}")
-                    save_match_to_db(matches_collection, startup_id, investor_id,overall_score,scorecard)
-                    failed_matches += 1
-                
-                # Rate limiting
-                time.sleep(0.5)
-                
-                # Progress update every 20 matches
-                if (successful_matches + failed_matches) % 20 == 0:
-                    print(f"💾 Progress: {successful_matches} successful, {failed_matches} failed")
-            
-            print(f"\n✅ Processing Complete!")
-            print(f"📈 Final Results: {successful_matches} successful, {failed_matches} failed")
-            
-            # Show statistics
-            if successful_matches > 0:
-                pipeline = [
-                    {"$match": {"overall_score": {"$gt": 0}}},
-                    {"$group": {
-                        "_id": None,
-                        "avg_score": {"$avg": "$overall_score"},
-                        "min_score": {"$min": "$overall_score"},
-                        "max_score": {"$max": "$overall_score"},
-                        "count": {"$sum": 1}
-                    }}
-                ]
-                if matches_collection is not None:
-                    stats = list(matches_collection.aggregate(pipeline))
-                    if stats:
-                        stat = stats[0]
-                        print(f"\n📊 Score Statistics:")
-                        print(f"   Average: {stat['avg_score']:.1f}")
-                        print(f"   Range: {stat['min_score']:.1f} - {stat['max_score']:.1f}")
-                        print(f"   Total successful matches: {stat['count']}")
-        
-        finally:
-            if client:
-                pass
-
-
     # --- 10. QUERY FUNCTIONS ---
     def get_top_matches_for_startup(startup_id: str, top_k: int = 10):
         """Get top matches for a specific startup from the database."""
         
         startup_collection, investor_collection, matches_collection, client = get_database_collections()
         
-        if matches_collection is not None:
+        if matches_collection is None:
             # print("❌ Failed to connect to database")
             return []
         if client:
@@ -562,14 +411,16 @@ def LLM():
                     ).sort("overall_score", -1).limit(top_k))
                 
                 investor_profiles=[]
-                if investor_collection is None:
+                if investor_collection is None or startup_collection is None:
                     return
                 for i, match in enumerate(matches, 1):
+                    startup_id= match.get("startup_id")
+                    startup=startup_collection.find_one({"_id":startup_id})
                     investor_id = match.get("investor_id")
                     investor=investor_collection.find_one({"_id":investor_id})
-                    if investor:
-                        startup_name=match["startup_name"]
-                        investor_name=match["investor_name"]
+                    if investor and startup:
+                        startup_name=str(startup.get("StartupName","Not Available"))
+                        investor_name=str(investor.get("FirmName","Not Available"))
                         inv_email=str(investor.get("CompanyEmail","Not Available"))
                         inv_company=str(investor.get("FirmName","Unknown Company"))
                         investor_location=str(investor.get("InvestorLocation","__"))
@@ -736,16 +587,8 @@ def LLM():
                     investor_location=str(investor.get("InvestorLocation","__"))
                     investor_title=str(investor.get("InvestorTitle",""))
                     
-                    save_match_to_db(matches_collection, User_id, investor_id=investor_id,overall_score=overall_score,scorecard=scorecard)                        
-                #     result.append({"Start_Name":startup_name,
-                #             "Investor_Name":investor_name,
-                #             "Investor_Company":inv_company,
-                #             "Investor_Email":inv_email,
-                #             "Investor_Location":investor_location,
-                #             "Investor_Title":investor_title,
-                #             "Overall_Score":overall_score,
-                #             "Scorecard":scorecard})
-                # return jsonify({"Success":True,"result":result})           
+                    save_match_to_db(matches_collection, User_id, investor_id=investor_id,overall_score=overall_score,scorecard=scorecard)                              
+                    time.sleep(4) #Rate limit handling
             else:
                 investor = investor_collection.find_one({"_id": ObjectId(User_id)})
                 # print(investor)
@@ -767,15 +610,8 @@ def LLM():
                     startup_location=str(startup.get("Location","__"))
                     investor_title=""
                     
-                    save_match_to_db(matches_collection, startup_id, investor_id=User_id,overall_score=overall_score,scorecard=scorecard)                        
-                #     result.append({"Investor_Name":investor_name,
-                #             "Founder_Name":founder_name,
-                #             "Startup_Company":startup_company,
-                #             "Startup_Email":startup_email,
-                #             "Startup_Location":startup_location,
-                #             "Overall_Score":overall_score,
-                #             "Scorecard":scorecard})
-                # return jsonify({"Success":True,"result":result})
+                    save_match_to_db(matches_collection, startup_id, investor_id=User_id,overall_score=overall_score,scorecard=scorecard)  
+                    time.sleep(4) #Rate limit handling                                     
         except Exception as e:
             return jsonify({"message":f"bhogoban{e}"})
         finally:
