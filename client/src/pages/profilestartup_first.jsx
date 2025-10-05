@@ -451,28 +451,28 @@ function ProfileStartupFirst({ pageSet }) {
                                         <option value="" disabled>
                                             Select stage
                                         </option>
-                                        <option value="pre-seed">
+                                        <option value="Pre-Seed Stage">
                                             Pre-Seed Stage - Idea/concept, minimal product, early small funding.
                                         </option>
-                                        <option value="seed">
+                                        <option value="Seed Stage">
                                             Seed Stage - Early product development & market research.
                                         </option>
-                                        <option value="early-series-a">
+                                        <option value="Early Stage / Series A">
                                             Early Stage / Series A - Product launched, initial traction, scaling begins.
                                         </option>
-                                        <option value="growth-stage">
+                                        <option value="Growth Stage (Series B, C, D…)">
                                             Growth Stage (Series B, C, D…) - Strong market presence, revenue growth.
                                         </option>
-                                        <option value="expansion-late">
+                                        <option value="Expansion / Late Stage">
                                             Expansion / Late Stage - Mature operations, large expansion or pre-IPO prep.
                                         </option>
-                                        <option value="pre-ipo">
+                                        <option value="Pre-IPO Stage">
                                             Pre-IPO Stage - Preparing to go public.
                                         </option>
-                                        <option value="ipo">
+                                        <option value="IPO">
                                             IPO - Public listing.
                                         </option>
-                                        <option value="post-ipo">
+                                        <option value="Post-IPO / Maturity">
                                             Post-IPO / Maturity - Publicly traded, focusing on stability & innovation.
                                         </option>
                                     </Box>
