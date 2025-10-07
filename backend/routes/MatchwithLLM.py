@@ -1,7 +1,5 @@
-import pymongo
 from pymongo import MongoClient
 import google.genai as genai
-from google.genai import types
 import openai
 import os
 import json
@@ -13,7 +11,12 @@ from bson import ObjectId
 from datetime import datetime
 from db.db import db_main,client
 from flask import Blueprint,request,jsonify
-
+from sentence_transformers import SentenceTransformer
+import os
+import uuid
+import re
+from sentence_transformers import SentenceTransformer
+from qdrant_client import QdrantClient, models
 load_dotenv()
 
 llm_bp_model = Blueprint("llmmodel",__name__)
@@ -50,12 +53,6 @@ def LLM():
         "stage_fit": 0.10,
     }
 
-    OPENAI_CONFIG = {
-        "model": "gpt-3.5-turbo",
-        "temperature": 0.3,
-        "max_tokens": 1000,
-    }
-
     MONGODB_CONFIG = {
         "connection_string": os.getenv("MONGODB_URL", "mongodb://localhost:27017/"),
         "database_name": os.getenv("DATABASE_NAME", "fundseeker"),
@@ -63,6 +60,180 @@ def LLM():
         "investor_collection": "investor",
         "matches_collection": "matches"
     }
+    def setup_qdrant_client():
+        """Initializes a Qdrant client connected to a Qdrant Cloud cluster."""
+        print("🚀 Connecting to Qdrant Cloud...")
+        
+        url = os.getenv("QDRANT_URL")
+        api_key = os.getenv("QDRANT_API_KEY")
+
+        if not url or not api_key:
+            raise ValueError(
+                "QDRANT_URL and QDRANT_API_KEY environment variables must be set."
+            )
+
+        client = QdrantClient(url=url, api_key=api_key)
+        print("✅ Successfully connected to Qdrant Cloud!")
+        return client
+
+    def setup_collection(client: QdrantClient, collection_name: str, vector_size: int):
+        print(f"🔧 Setting up collection: '{collection_name}'")
+        if client.collection_exists(collection_name):
+            print(f"⚠️ Collection '{collection_name}' already exists. Recreating it...")
+            client.recreate_collection(
+            collection_name=collection_name,
+            vectors_config=models.VectorParams(size=vector_size, distance=models.Distance.COSINE)
+            )
+        else:
+            client.create_collection(
+            collection_name=collection_name,
+            vectors_config=models.VectorParams(size=vector_size, distance=models.Distance.COSINE)
+            )
+
+    def create_payload_indexes(client: QdrantClient, collection_name: str):
+        """Creates payload indexes for efficient filtering."""
+        print(f"📈 Creating payload indexes for collection: '{collection_name}'")
+
+        client.create_payload_index(collection_name, field_name="SelectedStages", field_schema=models.PayloadSchemaType.KEYWORD)
+
+        client.create_payload_index(collection_name, field_name="SelectedIndustries", field_schema=models.PayloadSchemaType.KEYWORD)
+
+        client.create_payload_index(collection_name, field_name="check_size_min_inr", field_schema=models.PayloadSchemaType.FLOAT)
+        client.create_payload_index(collection_name, field_name="check_size_max_inr", field_schema=models.PayloadSchemaType.FLOAT)
+        print("✅ Payload indexes created successfully!")
+    
+    def setup_embedding_model(model_name: str = 'BAAI/bge-small-en-v1.5'):
+        print(f"📚 Loading embedding model: '{model_name}'")
+        return SentenceTransformer(model_name)
+
+    def parse_check_size(check_range_str: str):
+        """
+        A robust parser for strings like '₹50 L - ₹1.5 Cr' into min/max float values in INR.
+        Handles various units (L, Cr) and formats (ranges, open-ended '+').
+        """
+        multipliers = {
+            'l': 100000,
+            'cr': 10000000
+        }
+
+        matches = re.findall(r'([\d\.]+)\s*(L|Cr)', check_range_str, re.IGNORECASE)
+        
+        values_inr = []
+        for value_str, unit_str in matches:
+            value = float(value_str)
+            multiplier = multipliers[unit_str.lower()]
+            values_inr.append(value * multiplier)
+            
+        if not values_inr:
+            return 0, float('inf') 
+        
+        min_val = values_inr[0]
+        max_val = float('inf') # Default max for open-ended ranges like "3 Cr+"
+
+        if len(values_inr) > 1:
+            max_val = values_inr[1]
+        elif '+' not in check_range_str:
+            max_val = min_val
+            
+        return min_val, max_val
+
+    def embed_and_upsert_investors(client: QdrantClient, model: SentenceTransformer, investors: list):
+        points_to_upsert = []
+        print(f"✨ Embedding and preparing {len(investors)} investor profiles for upsert...")
+        for investor_doc in investors:
+            # Get the correctly typed dictionary
+            investor = extract_investor_profile(investor_doc, valueType=True)
+            
+            vector = model.encode(investor["BioThesis"], normalize_embeddings=True).tolist()
+            
+            # FIX: Pass the entire string to the parser, not just the first character.
+            min_inr, max_inr = parse_check_size(investor["CheckSizeRange"])
+            
+            # FIX: These are now actual lists thanks to our corrected extraction function.
+            cleaned_stages = [s.lower().strip() for s in investor["SelectedStages"]]
+            cleaned_industries = [i.lower().strip() for i in investor["SelectedIndustries"]]
+
+            print(f"  - UPLOADING: {investor['FirmName']} | Industries: {cleaned_industries}")
+
+            payload = {
+                "mongo_id": str(investor_doc["_id"]),
+                "FirmName": investor["FirmName"],
+                "SelectedIndustries": cleaned_industries,
+                "SelectedStages": cleaned_stages,
+                "InvestorLocation": investor["InvestorLocation"],
+                "check_size_min_inr": min_inr,
+                "check_size_max_inr": max_inr,
+                "original_check_size": investor["CheckSizeRange"]
+            }
+            points_to_upsert.append(models.PointStruct(id=str(uuid.uuid4()), vector=vector, payload=payload))
+
+        if points_to_upsert:
+            client.upsert(collection_name="investors", points=points_to_upsert, wait=True)
+            print("✅ Investor profiles upserted successfully!")
+        else:
+            print("⚠️ No investor profiles to upsert.")
+
+    def get_filtered_investor_candidates(
+        client: QdrantClient, 
+        model: SentenceTransformer, 
+        target_startup: dict, 
+        funding_filter_inr: int,
+        investor_collection: Any # Add mongo collection as an argument
+    ) -> List[Dict[str, Any]]:
+        """
+        Step 1 of the pipeline: Performs fast filtering using Qdrant and returns a list 
+        of full investor profiles from MongoDB for deep analysis.
+        """
+        # Extract startup details for the query
+        startup_details = extract_startup_profile(target_startup, valueType=True)
+        stage_filter = startup_details["CurrentStage"]
+        industries_filter = startup_details["StartupIndustryCategories"]
+
+        print("\n" + "="*50)
+        print(f"🔍 [Step 1] Filtering candidates for startup: '{startup_details['StartupName']}'")
+        print(f"  - Using Qdrant for initial semantic search and filtering...")
+        print("="*50 + "\n")
+
+        startup_text = (
+            f"Pitch: {startup_details['BriefPitch']}. "
+            f"Problem: {startup_details['ProblemStatement']}. "
+            f"Solution: {startup_details['Solution']}."
+        )
+        query_vector = model.encode(startup_text, normalize_embeddings=True).tolist()
+        
+        query_filter = models.Filter(
+            must=[
+                models.FieldCondition(key="SelectedStages", match=models.MatchValue(value=stage_filter.lower().strip())),
+                models.FieldCondition(key="SelectedIndustries", match=models.MatchAny(any=[i.lower().strip() for i in industries_filter])),
+                models.FieldCondition(key="check_size_min_inr", range=models.Range(lte=funding_filter_inr)),
+                models.FieldCondition(key="check_size_max_inr", range=models.Range(gte=funding_filter_inr))
+            ]
+        )
+        
+        search_results = client.search(
+            collection_name="investors",
+            query_vector=query_vector,
+            query_filter=query_filter,
+            limit=15, # Get the top 15 most relevant candidates
+            with_payload=True
+        )
+        
+        if not search_results:
+            print("  - No potential candidates found in Qdrant matching the criteria.")
+            return []
+
+        # --- KEY CHANGE: Use the mongo_id to fetch full documents ---
+        investor_mongo_ids = [hit.payload["mongo_id"] for hit in search_results if hit.payload]
+        print(f"🎯 Found {len(investor_mongo_ids)} potential candidates. Fetching full profiles from MongoDB...")
+
+        # Convert string IDs to ObjectId for MongoDB query
+        object_ids = [ObjectId(id_str) for id_str in investor_mongo_ids]
+        
+        # Fetch the full documents
+        candidate_profiles = list(investor_collection.find({"_id": {"$in": object_ids}}))    
+        print(f"✅ Retrieved {len(candidate_profiles)} full profiles for deep analysis.\n")
+
+        return candidate_profiles
 
     def get_database_collections():
         """Connect to MongoDB and return collections."""
@@ -79,94 +250,106 @@ def LLM():
             print(f"❌ MongoDB connection error: {e}")
             return None, None, None, None
 
-    def extract_investor_profile(investor_doc: Dict[str, Any]) -> str:
+    def parse_stringified_list(s: Any) -> List[str]:
+        """
+        Parses a string that represents a list into a Python list of strings.
+        Handles formats like "['item1', 'item2']" or "item1, item2".
+        """
+        if isinstance(s, list):
+            return [str(item).strip() for item in s]
+        if not isinstance(s, str):
+            return []
+        
+        # Clean the string: remove brackets, and single/double quotes
+        s = s.strip().lstrip('[').rstrip(']')
+        s = s.replace("'", "").replace('"', "")
+        
+        # Split by comma and clean up each item
+        items = [item.strip() for item in s.split(',') if item.strip()]
+        return items
+
+    def extract_investor_profile(investor_doc: Dict[str, Any], valueType: bool = False) -> Any:
         """Extract investor profile from MongoDB document."""
         
-        def safe_get(key: str, default: str = "Not specified") -> str:
+        def safe_get(key: str, default: Any = "Not specified") -> Any:
             val = investor_doc.get(key, default)
             if val is None or (isinstance(val, str) and val.lower() in ['nan', '', 'null']):
                 return default
-            return str(val)
+            return val
         
-        def format_list(val: Any) -> str:
-            if isinstance(val, list):
-                return ', '.join(str(x) for x in val if x)
-            return str(val) if val else "Not specified"
+        # When returning a dictionary for processing, ensure lists are actual lists.
+        if valueType:
+            return {
+                "FirmName": safe_get('FirmName', 'Unknown Firm'),
+                "Name": safe_get('Name', 'Unknown Investor'),
+                "InvestorTitle": safe_get('InvestorTitle', ''),
+                "BioThesis": safe_get('BioThesis', 'Not available'),
+                # FIX: Parse stringified lists into actual Python lists
+                "SelectedIndustries": parse_stringified_list(safe_get('SelectedIndustries', [])),
+                "CheckSizeRange": str(safe_get('CheckSizeRange', '0L - 0L')), # Ensure it's a string
+                "InvestorLocation": str(safe_get('InvestorLocation', 'Not specified')),
+                # FIX: Parse stringified lists into actual Python lists
+                "SelectedStages": parse_stringified_list(safe_get('SelectedStages', [])),
+                "value_add": safe_get('value_add', 'Not specified')
+            }
         
-        firm_name = safe_get('FirmName', 'Unknown Firm')
-        name = safe_get('Name', 'Unknown Investor')
-        title = safe_get('InvestorTitle', '')
-        company = safe_get('Company', firm_name)
-        bio_thesis = safe_get('BioThesis', 'Not available')
-        investment_focus = safe_get('investment_focus', safe_get('SelectedIndustries', 'Not specified'))
-        check_size = safe_get('CheckSizeRange', 'Not specified')
-        investor_location = safe_get('InvestorLocation', safe_get('Location', 'Not specified'))
-        selected_stages = safe_get('SelectedStages', safe_get('typical_stage', 'Not specified'))
-        ticket_type = safe_get('TicketType', 'Not specified')
-        syndication_preference = safe_get('SyndicationPreference', 'Not specified')
-        portfolio_examples = safe_get('portfolio_examples', 'Not specified')
-        value_add = safe_get('value_add', 'Not specified')
-        
-        profile = f"""
-**Investor Profile:**
-- **Name**: {name} {f"({title})" if title else ""} at {company}
-- **Investment Thesis/Bio**: {bio_thesis}
-- **Focus Industries**: {format_list(investment_focus)}
-- **Investment Stages**: {format_list(selected_stages)}
-- **Check Size Range**: {check_size}
-- **Location**: {investor_location}
-- **Ticket Type**: {format_list(ticket_type)}
-- **Syndication Preference**: {syndication_preference}
-- **Portfolio Examples**: {portfolio_examples}
-- **Value Add**: {value_add}
-        """.strip()
-        
-        return profile
+        else:
+            firm_name = str(safe_get('FirmName', 'Unknown Firm'))
+            bio_thesis = str(safe_get('BioThesis', 'Not available'))
+            investment_focus = parse_stringified_list(safe_get('SelectedIndustries', []))
+            check_size = str(safe_get('CheckSizeRange', 'Not specified'))
+            investor_location = str(safe_get('InvestorLocation', 'Not specified'))
+            selected_stages = parse_stringified_list(safe_get('SelectedStages', []))
+            value_add = str(safe_get('value_add', 'Not specified'))
 
-    def extract_startup_profile(startup_doc: Dict[str, Any]) -> str:
+            profile = f"""
+            **Investor Profile:**
+            - **Firm**: {firm_name}
+            - **Investment Thesis/Bio**: {bio_thesis}
+            - **Focus Industries**: {', '.join(investment_focus)}
+            - **Investment Stages**: {', '.join(selected_stages)}
+            - **Check Size Range**: {check_size}
+            - **Location**: {investor_location}
+            - **Value Add**: {value_add}
+            """.strip()
+            return profile
+
+    # extracting data for startup profiles --------------
+    def extract_startup_profile(startup_doc: Dict[str, Any], valueType: bool = False) -> Any:
         """Extract startup profile from MongoDB document."""
         
-        def safe_get(key: str, default: str = "Not specified") -> str:
+        def safe_get(key: str, default: Any = "Not specified") -> Any:
             val = startup_doc.get(key, default)
             if val is None or (isinstance(val, str) and val.lower() in ['nan', '', 'null']):
                 return default
-            return str(val)
-        
-        def format_list(val: Any) -> str:
-            if isinstance(val, list):
-                return ', '.join(str(x) for x in val if x)
-            return str(val) if val else "Not specified"
-        
-        startup_name = safe_get('StartupName', 'Unknown Startup')
-        founder_name = safe_get('FounderName', 'Unknown Founder')
-        brief_pitch = safe_get('BriefPitch', 'Not available')
-        business_model = safe_get('BusinessModel', 'Not specified')
-        current_stage = safe_get('CurrentStage', 'Not specified')
-        location = safe_get('Location', 'Not specified')
-        elevator_pitch = safe_get('ElevatorPitch', 'Not available')
-        problem_statement = safe_get('ProblemStatement', 'Not available')
-        solution = safe_get('Solution', 'Not available')
-        competitors = safe_get('Competitors', 'Not specified')
-        industry_categories = safe_get('StartupIndustryCategories', safe_get('Industry', 'Not specified'))
-        website = safe_get('StartupWebsiteUrl', 'Not specified')
-        
-        profile = f"""
-**Startup Profile:**
-- **Company**: {startup_name}
-- **Founder**: {founder_name}
-- **Website**: {website}
-- **Industry Categories**: {format_list(industry_categories)}
-- **Current Stage**: {current_stage}
-- **Location**: {location}
-- **Brief Pitch**: {brief_pitch}
-- **Business Model**: {business_model}
-- **Problem Statement**: {problem_statement}
-- **Solution**: {solution}
-- **Elevator Pitch**: {elevator_pitch}
-- **Key Competitors**: {competitors}
-        """.strip()
-        
-        return profile
+            return val
+
+        if valueType:
+            return {
+                "StartupName": str(safe_get('StartupName', 'Unknown Startup')),
+                "BriefPitch": str(safe_get('BriefPitch', 'Not available')),
+                "BusinessModel": str(safe_get('BusinessModel', 'Not specified')),
+                "CurrentStage": str(safe_get('CurrentStage', 'Not specified')),
+                "ProblemStatement": str(safe_get('ProblemStatement', 'Not available')),
+                "Solution": str(safe_get('Solution', 'Not available')),                
+                "StartupIndustryCategories": parse_stringified_list(safe_get('StartupIndustryCategories', [])),
+            }
+        else:
+            # ... (Your existing string formatting code for display can remain here) ...
+            # Again, the key fix is for the `valueType=True` case.
+            startup_name = str(safe_get('StartupName', 'Unknown Startup'))
+            brief_pitch = str(safe_get('BriefPitch', 'Not available'))
+            current_stage = str(safe_get('CurrentStage', 'Not specified'))
+            industry_categories = parse_stringified_list(safe_get('StartupIndustryCategories', []))
+            
+            profile = f"""
+            **Startup Profile:**
+            - **Company**: {startup_name}
+            - **Industry Categories**: {', '.join(industry_categories)}
+            - **Current Stage**: {current_stage}
+            - **Brief Pitch**: {brief_pitch}
+            """.strip()
+            return profile    
 
     def create_matching_prompt(startup_profile: str, investor_profile: str) -> str:
         """Create the LLM prompt for startup-investor matching analysis."""
@@ -403,7 +586,7 @@ Provide specific, actionable justifications based on the actual data provided.
         startup_collection, investor_collection, matches_collection, client = get_database_collections()
         
         if matches_collection is None:
-            print("❌ Failed to connect to database")
+            # print("❌ Failed to connect to database")
             return []
         
         try:
@@ -446,7 +629,7 @@ Provide specific, actionable justifications based on the actual data provided.
             print(f"❌ Error retrieving matches: {e}")
             return []
 
-    def create_matches_trial(isStartup:bool):
+    def create_matches(isStartup:bool):
         startup_collection, investor_collection, matches_collection, client = get_database_collections()
 
         if startup_collection is None or investor_collection is None or matches_collection is None or client is None:          
@@ -498,16 +681,87 @@ Provide specific, actionable justifications based on the actual data provided.
         except Exception as e:
             print(f"Error in create_matches_trial: {e}")
             return jsonify({"Success": False, "message": f"Error: {str(e)}"})
+    def create_matches_trial(isStartup:bool,maxRequests:int=5,candidate_investor:Optional[list]=None):
+        startup_collection, investor_collection, matches_collection, client = get_database_collections()
 
-    def main(isStartup:bool):
-        create_matches_trial(isStartup)
+        # seconds between requests to avoid rate limits
+        if startup_collection is None or matches_collection is None or client is None:          
+            return  ({"Success": False, "message":"Failed to fetch collections"})
+
+        try:
+            if isStartup:
+                Startup = startup_collection.find_one({"_id": ObjectId(User_id)})
+                investors = candidate_investor if candidate_investor else []
+                
+                if not Startup or not investors:
+                    return  ({"Success": False, "message":"No startup or investor data found in database"})
+                            
+                startup_name = Startup.get("StartupName", "Unknown Startup")
+                print(f"Processing {len(investors)} investors for startup: {startup_name}")
+                
+                for investor in investors:                
+                    investor_name = investor.get("Name", investor.get("Username", "Unknown Investor"))
+                    overall_score, scorecard = analyze_startup_investor_match(startup_doc= Startup,investor_doc= investor,WaitTime= 5)                     
+                    investor_id = str(investor.get("_id"))        
+                    save_match_to_db(matches_collection, User_id, investor_id=investor_id,overall_score=overall_score,scorecard=scorecard)
+                    time.sleep(1)
+        except Exception as e:
+            print(f"Error in create_matches_trial: {e}")
+            return  ({"Success": False, "message": f"Error: {str(e)}"})
         
+    def run_matching_pipeline(startup_id: str, funding_amount_inr: int, top_k: int = 10):
+        startup_collection, investor_collection, matches_collection, client = get_database_collections()
+        if startup_collection is None or investor_collection is None or matches_collection is None or client is None:          
+            print({"Success": False, "message":"Failed to fetch collections"})
+            exit(1)
+
+        investor_profiles=list(investor_collection.find({}))
+        target_startup_profile=startup_collection.find_one({"_id": ObjectId(User_id)})
+        try:
+            qdrant_client = setup_qdrant_client()
+            embedding_model = setup_embedding_model()
+
+            target_startup = startup_collection.find_one({"_id": ObjectId(startup_id)})
+            if not target_startup:
+                print(f"❌ Startup with ID {startup_id} not found.")
+                return
+            qdrant_client = setup_qdrant_client()
+            embedding_model = setup_embedding_model()
+            
+            vector_dim = 384  # Dimension for 'BAAI/bge-small-en-v1.5'
+            setup_collection(qdrant_client, "investors", vector_dim)
+            create_payload_indexes(qdrant_client, "investors")
+            embed_and_upsert_investors(qdrant_client, embedding_model, investor_profiles)
+            
+            required_funding_inr = 12_500_000 # ₹1.25 Cr
+
+            if target_startup_profile:
+                startup_stage = target_startup_profile["CurrentStage"]
+                startup_industries = target_startup_profile["StartupIndustryCategories"]        
+                candidate_investors=get_filtered_investor_candidates(qdrant_client, embedding_model, target_startup_profile, required_funding_inr, investor_collection=investor_collection)
+                
+            return candidate_investors
+
+        finally:
+            # --- KEY CHANGE: Ensure clients are closed gracefully ---
+            if qdrant_client:
+                print("🔌 Closing Qdrant client connection...")
+                qdrant_client.close()
+            if client:
+                print("🔌 Closing MongoDB client connection...")
+                client.close()
+            print("🏁 Pipeline finished.")
+
+    def main(isStartup:bool):            
+        candidate_investors=run_matching_pipeline(startup_id=User_id, funding_amount_inr=12500000, top_k=10)
+        create_matches_trial(isStartup,candidate_investor=candidate_investors)    
+
         if isStartup:
             result = get_top_matches_for_startup(User_id, 5)
         else:
             result = get_top_matches_for_investor(User_id, 5)
-        
-        print(f"Retrieved {len(result)} matches")
-        return jsonify({"Success": True, "result": result})
+            
+            print(f"Retrieved {len(result)} matches")
+        return ({"Sucess":True,"result":result})
     
     return main(isStartup)
