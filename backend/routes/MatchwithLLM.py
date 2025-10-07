@@ -746,10 +746,10 @@ Provide specific, actionable justifications based on the actual data provided.
             # --- KEY CHANGE: Ensure clients are closed gracefully ---
             if qdrant_client:
                 print("🔌 Closing Qdrant client connection...")
-                qdrant_client.close()
+                #qdrant_client.close()
             if client:
                 print("🔌 Closing MongoDB client connection...")
-                client.close()
+                #client.close()
             print("🏁 Pipeline finished.")
 
     def main(isStartup:bool):            
