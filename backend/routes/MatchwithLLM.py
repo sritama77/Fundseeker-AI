@@ -17,6 +17,8 @@ import uuid
 import re
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient, models
+from routes.QdrantConnection import qudrant_connection_var
+from routes.QdrantConnection import sentence_transformer_var
 load_dotenv()
 
 llm_bp_model = Blueprint("llmmodel",__name__)
@@ -60,21 +62,7 @@ def LLM():
         "investor_collection": "investor",
         "matches_collection": "matches"
     }
-    def setup_qdrant_client():
-        """Initializes a Qdrant client connected to a Qdrant Cloud cluster."""
-        print("🚀 Connecting to Qdrant Cloud...")
-        
-        url = os.getenv("QDRANT_URL")
-        api_key = os.getenv("QDRANT_API_KEY")
-
-        if not url or not api_key:
-            raise ValueError(
-                "QDRANT_URL and QDRANT_API_KEY environment variables must be set."
-            )
-
-        client = QdrantClient(url=url, api_key=api_key)
-        print("✅ Successfully connected to Qdrant Cloud!")
-        return client
+   
 
     def setup_collection(client: QdrantClient, collection_name: str, vector_size: int):
         print(f"🔧 Setting up collection: '{collection_name}'")
@@ -102,9 +90,7 @@ def LLM():
         client.create_payload_index(collection_name, field_name="check_size_max_inr", field_schema=models.PayloadSchemaType.FLOAT)
         print("✅ Payload indexes created successfully!")
     
-    def setup_embedding_model(model_name: str = 'BAAI/bge-small-en-v1.5'):
-        print(f"📚 Loading embedding model: '{model_name}'")
-        return SentenceTransformer(model_name)
+   
 
     def parse_check_size(check_range_str: str):
         """
@@ -718,15 +704,15 @@ Provide specific, actionable justifications based on the actual data provided.
         investor_profiles=list(investor_collection.find({}))
         target_startup_profile=startup_collection.find_one({"_id": ObjectId(User_id)})
         try:
-            qdrant_client = setup_qdrant_client()
-            embedding_model = setup_embedding_model()
+            qdrant_client = qudrant_connection_var
+            embedding_model = sentence_transformer_var
 
             target_startup = startup_collection.find_one({"_id": ObjectId(startup_id)})
             if not target_startup:
                 print(f"❌ Startup with ID {startup_id} not found.")
                 return
-            qdrant_client = setup_qdrant_client()
-            embedding_model = setup_embedding_model()
+            qdrant_client = qudrant_connection_var
+            embedding_model = sentence_transformer_var
             
             vector_dim = 384  # Dimension for 'BAAI/bge-small-en-v1.5'
             setup_collection(qdrant_client, "investors", vector_dim)
@@ -762,6 +748,6 @@ Provide specific, actionable justifications based on the actual data provided.
             result = get_top_matches_for_investor(User_id, 5)
             
             print(f"Retrieved {len(result)} matches")
-        return ({"Sucess":True,"result":result})
+        return ({"Success":True,"result":result})
     
     return main(isStartup)

@@ -8,7 +8,8 @@ from routes.singup_investor import investor_bp_signin
 from routes.userdetails_startup import userdetails_bp_startup
 from routes.userdetails_investor import userdetails_bp_investor
 from routes.MatchwithLLM import llm_bp_model
-
+from routes.AddProfiles import add_profile
+from routes.getProfiles import get_profiles
 app = Flask(__name__)
 CORS(app)  # allow all for testing
 
@@ -22,8 +23,8 @@ app.register_blueprint(investor_bp_signin)
 app.register_blueprint(userdetails_bp_startup)
 app.register_blueprint(userdetails_bp_investor)
 app.register_blueprint(llm_bp_model)
-
-
+app.register_blueprint(add_profile)
+app.register_blueprint(get_profiles)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=4040,debug=True)
