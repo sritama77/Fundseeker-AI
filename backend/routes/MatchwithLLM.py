@@ -11,14 +11,12 @@ from bson import ObjectId
 from datetime import datetime
 from db.db import db_main,client
 from flask import Blueprint,request,jsonify
-from sentence_transformers import SentenceTransformer
 import os
 import uuid
 import re
 from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient, models
-from routes.QdrantConnection import qudrant_connection_var
-from routes.QdrantConnection import sentence_transformer_var
+from routes.QdrantConnection import qudrant_connection_var as qdrant_client
 load_dotenv()
 
 llm_bp_model = Blueprint("llmmodel",__name__)
@@ -64,7 +62,7 @@ def LLM():
     }
    
 
-    def setup_collection(client: QdrantClient, collection_name: str, vector_size: int):
+    def setup_collection(client: QdrantClient, collection_name: str, vector_size: int=1):
         print(f"🔧 Setting up collection: '{collection_name}'")
         if client.collection_exists(collection_name):
             print(f"⚠️ Collection '{collection_name}' already exists. Recreating it...")
@@ -90,8 +88,6 @@ def LLM():
         client.create_payload_index(collection_name, field_name="check_size_max_inr", field_schema=models.PayloadSchemaType.FLOAT)
         print("✅ Payload indexes created successfully!")
     
-   
-
     def parse_check_size(check_range_str: str):
         """
         A robust parser for strings like '₹50 L - ₹1.5 Cr' into min/max float values in INR.
@@ -123,14 +119,14 @@ def LLM():
             
         return min_val, max_val
 
-    def embed_and_upsert_investors(client: QdrantClient, model: SentenceTransformer, investors: list):
+    def embed_and_upsert_investors(client: QdrantClient, investors: list):
         points_to_upsert = []
         print(f"✨ Embedding and preparing {len(investors)} investor profiles for upsert...")
         for investor_doc in investors:
             # Get the correctly typed dictionary
             investor = extract_investor_profile(investor_doc, valueType=True)
             
-            vector = model.encode(investor["BioThesis"], normalize_embeddings=True).tolist()
+            # vector = model.encode(investor["BioThesis"], normalize_embeddings=True).tolist()
             
             # FIX: Pass the entire string to the parser, not just the first character.
             min_inr, max_inr = parse_check_size(investor["CheckSizeRange"])
@@ -151,7 +147,7 @@ def LLM():
                 "check_size_max_inr": max_inr,
                 "original_check_size": investor["CheckSizeRange"]
             }
-            points_to_upsert.append(models.PointStruct(id=str(uuid.uuid4()), vector=vector, payload=payload))
+            points_to_upsert.append(models.PointStruct(id=str(uuid.uuid4()), vector=[0.0], payload=payload))
 
         if points_to_upsert:
             client.upsert(collection_name="investors", points=points_to_upsert, wait=True)
@@ -160,8 +156,7 @@ def LLM():
             print("⚠️ No investor profiles to upsert.")
 
     def get_filtered_investor_candidates(
-        client: QdrantClient, 
-        model: SentenceTransformer, 
+        client: QdrantClient,         
         target_startup: dict, 
         funding_filter_inr: int,
         investor_collection: Any # Add mongo collection as an argument
@@ -185,7 +180,7 @@ def LLM():
             f"Problem: {startup_details['ProblemStatement']}. "
             f"Solution: {startup_details['Solution']}."
         )
-        query_vector = model.encode(startup_text, normalize_embeddings=True).tolist()
+        # query_vector = model.encode(startup_text, normalize_embeddings=True).tolist()
         
         query_filter = models.Filter(
             must=[
@@ -198,7 +193,7 @@ def LLM():
         
         search_results = client.search(
             collection_name="investors",
-            query_vector=query_vector,
+            query_vector=[0.0],
             query_filter=query_filter,
             limit=15, # Get the top 15 most relevant candidates
             with_payload=True
@@ -220,7 +215,86 @@ def LLM():
         print(f"✅ Retrieved {len(candidate_profiles)} full profiles for deep analysis.\n")
 
         return candidate_profiles
+    def embed_and_upsert_startups(client: QdrantClient,
+                                # model: SentenceTransformer,
+                                startups: list):
+        points_to_upsert = []
+        print(f"✨ Embedding and preparing {len(startups)} startup profiles for upsert...")
+        for startup_doc in startups:
+            startup = extract_startup_profile(startup_doc, valueType=True)
+            
+            startup_text = (
+                f"Pitch: {startup['BriefPitch']}. "
+                f"Problem: {startup['ProblemStatement']}. "
+                f"Solution: {startup['Solution']}."
+            )
+            cleaned_stages=startup["CurrentStage"].lower()
+            cleaned_industries=[i.lower() for i in startup["StartupIndustryCategories"]]
+            
+            payload = {
+                "mongo_id": str(startup_doc["_id"]),
+                "StartupName": startup["StartupName"],
+                "StartupIndustryCategories": cleaned_industries,
+                "CurrentStage": cleaned_stages,
+                "FundingRequirementINR": startup.get("FundingRequirementINR", 0) # Use .get for safety
+            }
+            points_to_upsert.append(models.PointStruct(id=str(uuid.uuid4()), vector=[0.0], payload=payload))
 
+        if points_to_upsert:
+            client.upsert(collection_name="startups", points=points_to_upsert, wait=True)
+            print("✅ Startup profiles upserted successfully!")
+        else:
+            print("⚠️ No startup profiles to upsert.")
+    def get_filtered_startup_candidates(
+        client: QdrantClient, 
+        # model: SentenceTransformer, 
+        target_investor: dict, 
+        startup_collection: Any
+        ) -> List[Dict[str, Any]]:
+        """
+        Performs fast filtering using Qdrant to find startup candidates for an investor.
+        """
+        investor_details = extract_investor_profile(target_investor, valueType=True)
+        investor_stages = [s.lower().strip() for s in investor_details["SelectedStages"]]
+        investor_industries = [i.lower().strip() for i in investor_details["SelectedIndustries"]]
+        min_check_size, max_check_size = parse_check_size(investor_details["CheckSizeRange"])
+
+        print("\n" + "="*50)
+        print(f"🔍 [Step 1] Filtering candidates for investor: '{investor_details['FirmName']}'")
+        print(f"   - Using Qdrant for initial semantic search and filtering...")
+        print("="*50 + "\n")
+
+        # query_vector = model.encode(investor_details["BioThesis"], normalize_embeddings=True).tolist()
+        print("Stage filter",investor_stages," Industries filter",investor_industries)
+        query_filter = models.Filter(must=[
+            models.FieldCondition(key="CurrentStage", match=models.MatchAny(any=investor_stages)),
+            models.FieldCondition(key="StartupIndustryCategories", match=models.MatchAny(any=investor_industries)),
+            models.FieldCondition(key="FundingRequirementINR", range=models.Range(gte=min_check_size, lte=max_check_size))
+        ])
+        
+        search_results = client.search(
+            collection_name="startups",
+            query_vector=[0.0],
+            query_filter=query_filter,
+            limit=15,
+            with_payload=True
+        )
+        
+        if not search_results:
+            print("   - No potential startup candidates found in Qdrant matching the criteria.")
+            return []
+
+        startup_mongo_ids = [hit.payload["mongo_id"] for hit in search_results if hit.payload]
+        print(f"🎯 Found {len(startup_mongo_ids)} potential candidates. Fetching full profiles from MongoDB...")
+
+        object_ids = [ObjectId(id_str) for id_str in startup_mongo_ids]
+        candidate_profiles = []
+        for id_str in object_ids:
+            candidate_profiles.append(startup_collection.find_one({"_id": id_str}))
+        # candidate_profiles = list(startup_collection.find({"_id": {"$in": object_ids}}))
+        print(f"✅ Retrieved {len(candidate_profiles)} full profiles for deep analysis.\n")
+
+        return candidate_profiles
     def get_database_collections():
         """Connect to MongoDB and return collections."""
         try:
@@ -667,35 +741,62 @@ Provide specific, actionable justifications based on the actual data provided.
         except Exception as e:
             print(f"Error in create_matches_trial: {e}")
             return jsonify({"Success": False, "message": f"Error: {str(e)}"})
-    def create_matches_trial(isStartup:bool,maxRequests:int=5,candidate_investor:Optional[list]=None):
+        
+    def create_matches_trial(isStartup:bool,maxRequests:int=5,candidates:Optional[list]=None):
         startup_collection, investor_collection, matches_collection, client = get_database_collections()
 
         # seconds between requests to avoid rate limits
-        if startup_collection is None or matches_collection is None or client is None:          
+        if startup_collection is None or matches_collection is None or investor_collection is None or client is None:          
             return  ({"Success": False, "message":"Failed to fetch collections"})
 
         try:
             if isStartup:
                 Startup = startup_collection.find_one({"_id": ObjectId(User_id)})
-                investors = candidate_investor if candidate_investor else []
+                investors = candidates if candidates else []
                 
                 if not Startup or not investors:
                     return  ({"Success": False, "message":"No startup or investor data found in database"})
                             
                 startup_name = Startup.get("StartupName", "Unknown Startup")
                 print(f"Processing {len(investors)} investors for startup: {startup_name}")
-                
+                count=15
                 for investor in investors:                
                     investor_name = investor.get("Name", investor.get("Username", "Unknown Investor"))
                     overall_score, scorecard = analyze_startup_investor_match(startup_doc= Startup,investor_doc= investor,WaitTime= 5)                     
                     investor_id = str(investor.get("_id"))        
                     save_match_to_db(matches_collection, User_id, investor_id=investor_id,overall_score=overall_score,scorecard=scorecard)
                     time.sleep(1)
+                    if count<=0:    
+                        break
+                    count-=1
+            else:
+                investor = investor_collection.find_one({"_id": ObjectId(User_id)})
+                
+                startups = candidates if candidates else []
+                
+                if not investor or not startups:
+                    return jsonify({"Success": False, "message":"No investor or startup data found in database"})
+                            
+                investor_name = investor.get("Username", "Unknown investor")
+                print(f"Processing {len(startups)} startups for investor: {investor_name}")
+                count=15
+                for startup in startups:                
+                    overall_score, scorecard = analyze_startup_investor_match(startup_doc=startup, investor_doc=investor,WaitTime= 5)                     
+                    startup_id = str(startup.get("_id"))
+                    
+                    save_match_to_db(matches_collection, startup_id, investor_id=User_id,overall_score=overall_score,scorecard=scorecard)
+                    startup_name = startup.get("StartupName", "Unknown Startup")
+                    print(f"Saved match for {startup_name} with score {overall_score}")
+                    time.sleep(1)                    
+                    if count<=0:    
+                        break
+                    count-=1
         except Exception as e:
             print(f"Error in create_matches_trial: {e}")
             return  ({"Success": False, "message": f"Error: {str(e)}"})
         
-    def run_matching_pipeline(startup_id: str, funding_amount_inr: int, top_k: int = 10):
+    def run_matching_startup_pipeline(startup_id: str, funding_amount_inr: int, top_k: int = 10):
+
         startup_collection, investor_collection, matches_collection, client = get_database_collections()
         if startup_collection is None or investor_collection is None or matches_collection is None or client is None:          
             print({"Success": False, "message":"Failed to fetch collections"})
@@ -704,47 +805,65 @@ Provide specific, actionable justifications based on the actual data provided.
         investor_profiles=list(investor_collection.find({}))
         target_startup_profile=startup_collection.find_one({"_id": ObjectId(User_id)})
         try:
-            qdrant_client = qudrant_connection_var
-            embedding_model = sentence_transformer_var
-
             target_startup = startup_collection.find_one({"_id": ObjectId(startup_id)})
             if not target_startup:
                 print(f"❌ Startup with ID {startup_id} not found.")
                 return
-            qdrant_client = qudrant_connection_var
-            embedding_model = sentence_transformer_var
-            
-            vector_dim = 384  # Dimension for 'BAAI/bge-small-en-v1.5'
-            setup_collection(qdrant_client, "investors", vector_dim)
+
+            setup_collection(qdrant_client, "investors")
             create_payload_indexes(qdrant_client, "investors")
-            embed_and_upsert_investors(qdrant_client, embedding_model, investor_profiles)
+            embed_and_upsert_investors(qdrant_client, investor_profiles)
             
             required_funding_inr = 12_500_000 # ₹1.25 Cr
 
             if target_startup_profile:
                 startup_stage = target_startup_profile["CurrentStage"]
                 startup_industries = target_startup_profile["StartupIndustryCategories"]        
-                candidate_investors=get_filtered_investor_candidates(qdrant_client, embedding_model, target_startup_profile, required_funding_inr, investor_collection=investor_collection)
-                
+                candidate_investors=get_filtered_investor_candidates(qdrant_client, target_startup_profile, required_funding_inr, investor_collection=investor_collection)                
             return candidate_investors
+        finally:
+            print("Startup pipeline completed.")
+    def run_investor_matching_pipeline(investor_id: str):
+        startup_collection, investor_collection, _, client = get_database_collections()
+        if startup_collection is None or investor_collection is None or client is None:
+            print({"Success": False, "message": "Failed to fetch collections"})
+            exit(1)
+
+        all_startups = list(startup_collection.find({}))
+        target_investor = investor_collection.find_one({"_id": ObjectId(investor_id)})
+        
+        if not target_investor:
+            print(f"❌ Investor with ID {investor_id} not found.")
+            return []
+
+        try:
+            setup_collection(qdrant_client, "startups")
+
+            qdrant_client.create_payload_index("startups", "CurrentStage", models.PayloadSchemaType.KEYWORD)
+            qdrant_client.create_payload_index("startups", "StartupIndustryCategories", models.PayloadSchemaType.KEYWORD)
+            qdrant_client.create_payload_index("startups", "FundingRequirementINR", models.PayloadSchemaType.FLOAT)
+            
+            embed_and_upsert_startups(qdrant_client, all_startups)
+            
+            # Get the filtered list of candidates
+            candidate_startups = get_filtered_startup_candidates(qdrant_client, target_investor, startup_collection)
+            return candidate_startups
 
         finally:
-            # --- KEY CHANGE: Ensure clients are closed gracefully ---
-            if qdrant_client:
-                print("🔌 Closing Qdrant client connection...")
-                #qdrant_client.close()
-            if client:
-                print("🔌 Closing MongoDB client connection...")
-                #client.close()
-            print("🏁 Pipeline finished.")
+            if qdrant_client: qdrant_client.close()
+            if client: client.close()
 
     def main(isStartup:bool):            
-        candidate_investors=run_matching_pipeline(startup_id=User_id, funding_amount_inr=12500000, top_k=10)
-        create_matches_trial(isStartup,candidate_investor=candidate_investors)    
+        candidate_investors=run_matching_startup_pipeline(startup_id=User_id, funding_amount_inr=12500000, top_k=10)
+        create_matches_trial(isStartup,candidates=candidate_investors)    
 
         if isStartup:
+            candidate_investors=run_matching_startup_pipeline(startup_id=User_id, funding_amount_inr=12500000, top_k=10)
+            create_matches_trial(isStartup,candidates=candidate_investors) 
             result = get_top_matches_for_startup(User_id, 5)
         else:
+            candidate_startups=run_investor_matching_pipeline(investor_id=User_id)
+            create_matches_trial(isStartup,candidates=candidate_startups) 
             result = get_top_matches_for_investor(User_id, 5)
             
             print(f"Retrieved {len(result)} matches")
