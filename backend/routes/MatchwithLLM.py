@@ -14,7 +14,7 @@ from flask import Blueprint,request,jsonify
 import os
 import uuid
 import re
-from sentence_transformers import SentenceTransformer
+#from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient, models
 from routes.QdrantConnection import qudrant_connection_var as qdrant_client
 load_dotenv()
@@ -850,8 +850,9 @@ Provide specific, actionable justifications based on the actual data provided.
             return candidate_startups
 
         finally:
-            if qdrant_client: qdrant_client.close()
-            if client: client.close()
+            # if qdrant_client: qdrant_client.close()
+            # if client: client.close()
+            print("close")
 
     def main(isStartup:bool):            
         candidate_investors=run_matching_startup_pipeline(startup_id=User_id, funding_amount_inr=12500000, top_k=10)

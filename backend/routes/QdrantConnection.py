@@ -1,5 +1,5 @@
 import os
-from sentence_transformers import SentenceTransformer
+#from sentence_transformers import SentenceTransformer
 from qdrant_client import QdrantClient, models
 from dotenv import load_dotenv
 load_dotenv()
@@ -22,8 +22,8 @@ def setup_qdrant_client():
 
 qudrant_connection_var = setup_qdrant_client()
 
-def setup_embedding_model(model_name: str = 'BAAI/bge-small-en-v1.5'):
-        print(f"📚 Loading embedding model: '{model_name}'")
-        return SentenceTransformer(model_name)
+# def setup_embedding_model(model_name: str = 'BAAI/bge-small-en-v1.5'):
+#         print(f"📚 Loading embedding model: '{model_name}'")
+#         return SentenceTransformer(model_name)
 
-sentence_transformer_var = setup_embedding_model()
+# sentence_transformer_var = setup_embedding_model()

@@ -51,7 +51,7 @@ function ProfileInvestorFirst({ pageSet }) {
             toast.error("Firm Name is required");
             return false;
         }
-        if (!InvestorWebsite.trim()) {
+        if (!InvestorTitle.trim()) {
             toast.error("Role/Title is required");
             return false;
         }
