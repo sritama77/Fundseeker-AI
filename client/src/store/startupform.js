@@ -17,6 +17,7 @@ const SignupStartupStore = create((set, get) => ({
     BusinessModel: "",
     ElevatorPitch: "",
     Competitors: "",
+    FundingRequirementINR: "",
 
     setPassword: (data) => set({Password: data}),
     setConfirmPassword: (data) => set({ConfirmPassword: data}),
@@ -34,6 +35,7 @@ const SignupStartupStore = create((set, get) => ({
     setBusinessModel: (data) => set({BusinessModel: data}),
     setElevatorPitch: (data) => set({ElevatorPitch: data}),
     setCompetitors: (data) => set({Competitors: data}),
+    setFundingRequirementINR: (data) => set({FundingRequirementINR: data}),
 
     // Industry toggle and remove methods
     handleIndustryToggle: (industry) => set((state) => ({

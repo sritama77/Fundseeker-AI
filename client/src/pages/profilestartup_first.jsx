@@ -1,12 +1,13 @@
 "use client"
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText, Select } from "@chakra-ui/react";
-import { useState,useEffect } from "react"
+import { useState, useEffect } from "react"
 import SignupStartupStore from "../store/startupform";
 
 function ProfileStartupFirst({ pageSet }) {
 
     const [isIndustryDropdownOpen, setIsIndustryDropdownOpen] = useState(false);
+    const [isStageDropdownOpen, setIsStageDropdownOpen] = useState(false);
     const { FounderName, setFounderName, StartupWebsiteUrl, setStartupWebsiteUrl, Location, setLocation, SocialMediaLink, setSocialMediaLink, CurrentStage, setCurrentStage, StartupIndustryCategories, setStartupIndustryCategories, handleIndustryToggle, removeIndustry } = SignupStartupStore()
 
     const industryOptions = [
@@ -24,24 +25,39 @@ function ProfileStartupFirst({ pageSet }) {
         "Other"
     ];
 
-    // const handleIndustryToggle = (industry) => {
-    //     setStartupIndustryCategories(prev => {
-    //         if (prev.includes(industry)) {
-    //             return prev.filter(item => item !== industry);
-    //         } else {
-    //             return [...prev, industry];
-    //         }
-    //     });
-    // };
+    const stageOptions = [
+        { value: "Pre-Seed Stage", label: "Pre-Seed Stage - Idea/concept, minimal product, early small funding." },
+        { value: "Seed Stage", label: "Seed Stage - Early product development & market research." },
+        { value: "Early Stage / Series A", label: "Early Stage / Series A - Product launched, initial traction, scaling begins." },
+        { value: "Growth Stage (Series B, C, D…)", label: "Growth Stage (Series B, C, D…) - Strong market presence, revenue growth." },
+        { value: "Expansion / Late Stage", label: "Expansion / Late Stage - Mature operations, large expansion or pre-IPO prep." },
+        { value: "Pre-IPO Stage", label: "Pre-IPO Stage - Preparing to go public." },
+        { value: "IPO", label: "IPO - Public listing." },
+        { value: "Post-IPO / Maturity", label: "Post-IPO / Maturity - Publicly traded, focusing on stability & innovation." }
+    ];
 
-    // const removeIndustry = (industryToRemove) => {
-    //     setStartupIndustryCategories(prev => prev.filter(industry => industry !== industryToRemove));
-    // };
     useEffect(() => {
         const temp = localStorage.getItem("token")
         temp !== null ? pageSet(11) : null
 
     }, [])
+
+    // Handle click outside to close dropdowns
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (isIndustryDropdownOpen && !event.target.closest('.industry-dropdown-container')) {
+                setIsIndustryDropdownOpen(false);
+            }
+            if (isStageDropdownOpen && !event.target.closest('.stage-dropdown-container')) {
+                setIsStageDropdownOpen(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isIndustryDropdownOpen, isStageDropdownOpen]);
 
     const validateUrl = (url) => {
         return url.startsWith("http://") || url.startsWith("https://")
@@ -198,7 +214,7 @@ function ProfileStartupFirst({ pageSet }) {
                         >
 
                             {/* Founder Name */}
-                            <Box height={["100%"]} width={["100%"]} display={"flex"} justifyContent={"center"} alignItems={"flex-start"}>
+                            <Box height={["90%"]} width={["100%"]} display={"flex"} justifyContent={"center"} alignItems={"flex-start"}>
                                 <Field.Root required style={{ height: "80%" }}>
                                     <Field.Label color="white" fontFamily="Poppins">
                                         Founder Name <Field.RequiredIndicator />
@@ -223,23 +239,90 @@ function ProfileStartupFirst({ pageSet }) {
                                 </Field.Root>
                             </Box>
 
-                            {/* Website URL */}
+                            {/* Current Stage */}
                             <Box height={["100%"]} width={["100%"]} display={"flex"} justifyContent={"center"} alignItems={"flex-start"}>
-                                <Field.Root required style={{ height: "80%" }}>
+                                <Field.Root required style={{ height: "70%" }}>
                                     <Field.Label color="white" fontFamily="Poppins">
-                                        Website URL (Should start with http/https) <Field.RequiredIndicator />
+                                        Current Stage <Field.RequiredIndicator />
                                     </Field.Label>
-                                    <Input
-                                        placeholder="e.g. https://greentech.in"
-                                        value={StartupWebsiteUrl}
-                                        onChange={(e) => setStartupWebsiteUrl(e.target.value)}
-                                        height="100%"
-                                        width="100%"
-                                        bgColor="rgba(255, 255, 255, 0.1)"
-                                        color="white"
-                                        fontFamily="Poppins"
-                                        border="1px solid #FFF"
-                                    />
+                                    <Box position="relative" width="100%" className="stage-dropdown-container">
+                                        {/* Custom Single-Select Container */}
+                                        <Box
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsStageDropdownOpen(!isStageDropdownOpen);
+                                            }}
+                                            minHeight="40px"
+                                            width="100%"
+                                            bgColor="rgba(255, 255, 255, 0.1)"
+                                            color="white"
+                                            fontFamily="Poppins"
+                                            border="1px solid #FFF"
+                                            borderRadius="md"
+                                            paddingX="12px"
+                                            paddingY="8px"
+                                            cursor="pointer"
+                                            display="flex"
+                                            alignItems="center"
+                                            justifyContent="space-between"
+                                            _hover={{
+                                                bgColor: "rgba(255, 255, 255, 0.15)"
+                                            }}
+                                        >
+                                            <Text 
+                                                color={CurrentStage === "" ? "rgba(255, 255, 255, 0.5)" : "white"}
+                                                fontSize="14px"
+                                            >
+                                                {CurrentStage === "" ? "Select stage" : CurrentStage}
+                                            </Text>
+                                            <Text fontSize="12px" marginLeft="8px">
+                                                {isStageDropdownOpen ? '▲' : '▼'}
+                                            </Text>
+                                        </Box>
+
+                                        {/* Dropdown Options */}
+                                        {isStageDropdownOpen && (
+                                            <Box
+                                                position="absolute"
+                                                top="100%"
+                                                left={0}
+                                                right={0}
+                                                bg="rgba(3, 63, 121, 0.98)"
+                                                border="1px solid #FFF"
+                                                borderRadius="md"
+                                                maxHeight="250px"
+                                                overflowY="auto"
+                                                zIndex={10000}
+                                                mt={1}
+                                                boxShadow="0 4px 6px rgba(0, 0, 0, 0.3)"
+                                            >
+                                                {stageOptions.map((option) => (
+                                                    <Box
+                                                        key={option.value}
+                                                        px={3}
+                                                        py={2}
+                                                        cursor="pointer"
+                                                        color="white"
+                                                        fontFamily="Poppins"
+                                                        fontSize="13px"
+                                                        display="flex"
+                                                        alignItems="center"
+                                                        _hover={{
+                                                            bg: "rgba(229, 196, 138, 0.3)"
+                                                        }}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setCurrentStage(option.value);
+                                                            setIsStageDropdownOpen(false);
+                                                        }}
+                                                        bg={CurrentStage === option.value ? "rgba(229, 196, 138, 0.3)" : "transparent"}
+                                                    >
+                                                        <Text>{option.label}</Text>
+                                                    </Box>
+                                                ))}
+                                            </Box>
+                                        )}
+                                    </Box>
                                 </Field.Root>
                             </Box>
 
@@ -249,13 +332,15 @@ function ProfileStartupFirst({ pageSet }) {
                                     <Field.Label color="white" fontFamily="Poppins">
                                         Industry/Sector (Try not to choose more than 3) <Field.RequiredIndicator />
                                     </Field.Label>
-                                    <Box position="relative">
+                                    <Box position="relative" width="90%" className="industry-dropdown-container">
                                         {/* Custom Multi-Select Container */}
                                         <Box
-                                            onClick={() => setIsIndustryDropdownOpen(!isIndustryDropdownOpen)}
-                                            height="100%"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setIsIndustryDropdownOpen(!isIndustryDropdownOpen);
+                                            }}
                                             minHeight="50px"
-                                            width="90%"
+                                            width="100%"
                                             bgColor="rgba(255, 255, 255, 0.1)"
                                             color="white"
                                             fontFamily="Poppins"
@@ -268,48 +353,49 @@ function ProfileStartupFirst({ pageSet }) {
                                             flexWrap="wrap"
                                             alignItems="center"
                                             gap={2}
-                                            _focus={{
-                                                outline: "none",
-                                                borderColor: "white"
+                                            _hover={{
+                                                bgColor: "rgba(255, 255, 255, 0.15)"
                                             }}
                                         >
-                                            {StartupIndustryCategories?.length === 0 ? (
-                                                <Text color="rgba(255, 255, 255, 0.6)" fontSize="14px">
-                                                    Select industries
-                                                </Text>
-                                            ) : (
-                                                StartupIndustryCategories?.map((industry) => (
-                                                    <Box
-                                                        key={industry}
-                                                        display="flex"
-                                                        alignItems="center"
-                                                        bg="rgba(229, 196, 138, 0.8)"
-                                                        color="#011F3C"
-                                                        px={2}
-                                                        py={1}
-                                                        borderRadius="md"
-                                                        fontSize="12px"
-                                                        fontWeight={500}
-                                                    >
-                                                        <Text>{industry}</Text>
+                                            <Box display="flex" flexWrap="wrap" gap={2} flex="1" alignItems="center">
+                                                {StartupIndustryCategories?.length === 0 ? (
+                                                    <Text color="rgba(255, 255, 255, 0.5)" fontSize="14px">
+                                                        Select industries
+                                                    </Text>
+                                                ) : (
+                                                    StartupIndustryCategories?.map((industry) => (
                                                         <Box
-                                                            ml={1}
-                                                            cursor="pointer"
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                removeIndustry(industry);
-                                                            }}
-                                                            _hover={{ color: "red.500" }}
-                                                            fontWeight="bold"
+                                                            key={industry}
+                                                            display="flex"
+                                                            alignItems="center"
+                                                            bg="rgba(229, 196, 138, 0.8)"
+                                                            color="#011F3C"
+                                                            px={2}
+                                                            py={1}
+                                                            borderRadius="md"
+                                                            fontSize="12px"
+                                                            fontWeight={500}
                                                         >
-                                                            x
+                                                            <Text>{industry}</Text>
+                                                            <Box
+                                                                ml={1}
+                                                                cursor="pointer"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    removeIndustry(industry);
+                                                                }}
+                                                                _hover={{ color: "red.500" }}
+                                                                fontWeight="bold"
+                                                            >
+                                                                x
+                                                            </Box>
                                                         </Box>
-                                                    </Box>
-                                                ))
-                                            )}
-                                            <Box ml="auto" fontSize="12px">
-                                                {isIndustryDropdownOpen ? '▲' : '▼'}
+                                                    ))
+                                                )}
                                             </Box>
+                                            <Text fontSize="12px" marginLeft="8px">
+                                                {isIndustryDropdownOpen ? '▲' : '▼'}
+                                            </Text>
                                         </Box>
 
                                         {/* Dropdown Options */}
@@ -319,14 +405,14 @@ function ProfileStartupFirst({ pageSet }) {
                                                 top="100%"
                                                 left={0}
                                                 right={0}
-                                                bg="rgba(3, 63, 121, 0.95)"
+                                                bg="rgba(3, 63, 121, 0.98)"
                                                 border="1px solid #FFF"
                                                 borderRadius="md"
-                                                maxHeight="150px"
+                                                maxHeight="200px"
                                                 overflowY="auto"
-                                                zIndex={1000}
+                                                zIndex={10000}
                                                 mt={1}
-                                                width="90%"
+                                                boxShadow="0 4px 6px rgba(0, 0, 0, 0.3)"
                                             >
                                                 {industryOptions.map((industry) => (
                                                     <Box
@@ -340,11 +426,11 @@ function ProfileStartupFirst({ pageSet }) {
                                                         display="flex"
                                                         alignItems="center"
                                                         _hover={{
-                                                            bg: "rgba(229, 196, 138, 0.2)"
+                                                            bg: "rgba(229, 196, 138, 0.3)"
                                                         }}
-                                                        onClick={() => {
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
                                                             handleIndustryToggle(industry);
-                                                            console.log(StartupIndustryCategories);
                                                         }}
                                                     >
                                                         <Box
@@ -374,7 +460,7 @@ function ProfileStartupFirst({ pageSet }) {
                             </Box>
 
                             {/* Social Media URL */}
-                            <Box height={["100%"]} width={["100%"]} display={"flex"} justifyContent={"center"} alignItems={"center"}>
+                            <Box height={["90%"]} width={["100%"]} display={"flex"} justifyContent={"center"} alignItems={"center"}>
                                 <Field.Root required style={{ height: "80%" }}>
                                     <Field.Label color="white" fontFamily="Poppins">
                                         LinkedIn / Twitter / Instagram (Link to Company's profile) <Field.RequiredIndicator />
@@ -417,65 +503,23 @@ function ProfileStartupFirst({ pageSet }) {
                                 </Field.Root>
                             </Box>
 
-                            {/* Current Stage */}
-                            <Box height={["100%"]} width={["100%"]} display={"flex"} justifyContent={"center"} alignItems={"center"} >
-                                <Field.Root required style={{ height: "70%" }}>
+                            {/* Website URL */}
+                            <Box height={["90%"]} width={["100%"]} display={"flex"} justifyContent={"center"} alignItems={"center"}>
+                                <Field.Root required style={{ height: "80%" }}>
                                     <Field.Label color="white" fontFamily="Poppins">
-                                        Current Stage <Field.RequiredIndicator />
+                                        Website URL (Should start with http/https) <Field.RequiredIndicator />
                                     </Field.Label>
-                                    <Box
-                                        as="select"
-                                        value={CurrentStage}
-                                        onChange={(e) => setCurrentStage(e.target.value)}
+                                    <Input
+                                        placeholder="e.g. https://greentech.in"
+                                        value={StartupWebsiteUrl}
+                                        onChange={(e) => setStartupWebsiteUrl(e.target.value)}
                                         height="100%"
                                         width="100%"
                                         bgColor="rgba(255, 255, 255, 0.1)"
                                         color="white"
                                         fontFamily="Poppins"
                                         border="1px solid #FFF"
-                                        borderRadius="md"
-                                        px={3}
-                                        cursor="pointer"
-                                        _focus={{
-                                            outline: "none",
-                                            borderColor: "white"
-                                        }}
-                                        sx={{
-                                            option: {
-                                                backgroundColor: "#033F79",
-                                                color: "black",
-                                                fontFamily: "Poppins"
-                                            }
-                                        }}
-                                    >
-                                        <option value="" disabled>
-                                            Select stage
-                                        </option>
-                                        <option value="Pre-Seed Stage">
-                                            Pre-Seed Stage - Idea/concept, minimal product, early small funding.
-                                        </option>
-                                        <option value="Seed Stage">
-                                            Seed Stage - Early product development & market research.
-                                        </option>
-                                        <option value="Early Stage / Series A">
-                                            Early Stage / Series A - Product launched, initial traction, scaling begins.
-                                        </option>
-                                        <option value="Growth Stage (Series B, C, D…)">
-                                            Growth Stage (Series B, C, D…) - Strong market presence, revenue growth.
-                                        </option>
-                                        <option value="Expansion / Late Stage">
-                                            Expansion / Late Stage - Mature operations, large expansion or pre-IPO prep.
-                                        </option>
-                                        <option value="Pre-IPO Stage">
-                                            Pre-IPO Stage - Preparing to go public.
-                                        </option>
-                                        <option value="IPO">
-                                            IPO - Public listing.
-                                        </option>
-                                        <option value="Post-IPO / Maturity">
-                                            Post-IPO / Maturity - Publicly traded, focusing on stability & innovation.
-                                        </option>
-                                    </Box>
+                                    />
                                 </Field.Root>
                             </Box>
                         </Box>
