@@ -9,6 +9,8 @@ cart_collection = db_main["cart"]
 @add_profile.route("/addprofile",methods=["POST"])
 
 #addtocart fucntion
+#_id,CurrentProfileId
+
 
 def AddToCart():
         #body
@@ -28,4 +30,4 @@ def AddToCart():
             "profilesid":[data["CurrentProfileId"]]
         })
         
-        return jsonify({"message":"true"})
+        return jsonify({"updated":True})
