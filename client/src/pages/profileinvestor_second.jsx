@@ -237,7 +237,7 @@ function ProfileInvestorSecond({ pageSet }) {
                     alignItems={"center"}
                     flexDirection={"column"}
                 >
-                    <Box height="95%"
+                    <Box height="90%"
                         width={"120%"}
                         zIndex={3}
                         display={"flex"}
