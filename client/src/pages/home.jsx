@@ -55,11 +55,11 @@ const AnimatedGrowthChart = () => {
 
     const points = [
         { x: 10, y: 80 },
-        { x: 25, y: 70 },
-        { x: 40, y: 55 },
+        { x: 27, y: 70 },
+        { x: 38, y: 45 },
         { x: 55, y: 45 },
-        { x: 70, y: 25 },
-        { x: 85, y: 15 }
+        { x: 65, y: 25 },
+        { x: 85, y: 10 }
     ];
 
     const getAnimatedPoints = () => {
@@ -77,14 +77,14 @@ const AnimatedGrowthChart = () => {
 
     // Icon positions scattered around the chart (avoiding the line path)
     const iconPositions = [
-        { x: 8, y: 85, type: 'user', delay: 0 },
-        { x: 15, y: 15, type: 'world', delay: 0.2 },
-        { x: 30, y: 88, type: 'handshake', delay: 0.4 },
-        { x: 50, y: 10, type: 'search', delay: 0.6 },
+        { x: 3 , y: 90, type: 'user', delay: 0 },
+        { x: 8, y: 15, type: 'world', delay: 0.2 },
+        { x: 35, y: 88, type: 'world', delay: 0.4 },
+        { x: 50, y: 12, type: 'search', delay: 0.6 },
         { x: 70, y: 85, type: 'chat', delay: 0.8 },
-        { x: 85, y: 55, type: 'user', delay: 1.0 },
-        { x: 92, y: 15, type: 'handshake', delay: 1.2 },
-        { x: 5, y: 40, type: 'chat', delay: 1.4 }
+        { x: 95, y: 15, type: 'user', delay: 1.0 },
+        { x: 92, y: 65, type: 'search', delay: 1.2 },
+        { x: 25, y: 35, type: 'chat', delay: 1.4 }
     ];
 
     return (
@@ -107,14 +107,6 @@ const AnimatedGrowthChart = () => {
                             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                                 <circle cx="12" cy="8" r="4" fill="white" opacity="0.85"/>
                                 <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" stroke="white" strokeWidth="2" fill="none" opacity="0.85"/>
-                            </svg>
-                        )}
-                        {pos.type === 'handshake' && (
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                                <path d="M20 8L16 12L14 10L18 6L20 8Z" fill="white" opacity="0.85"/>
-                                <path d="M4 8L8 12L10 10L6 6L4 8Z" fill="white" opacity="0.85"/>
-                                <rect x="9" y="10" width="6" height="3" rx="1" fill="white" opacity="0.85"/>
-                                <path d="M7 14L5 16M17 14L19 16M7 18L5 20M17 18L19 20" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.85"/>
                             </svg>
                         )}
                         {pos.type === 'world' && (
@@ -145,8 +137,8 @@ const AnimatedGrowthChart = () => {
             <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
             <defs>
                 <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="rgba(255, 255, 255, 0.4)" />
-                    <stop offset="100%" stopColor="rgba(255, 255, 255, 0.05)" />
+                    <stop offset="0%" stopColor="rgba(255, 215, 100, 0.5)" />
+                    <stop offset="100%" stopColor="rgba(255, 193, 7, 0.1)" />
                 </linearGradient>
                 <filter id="glow">
                     <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
@@ -181,7 +173,7 @@ const AnimatedGrowthChart = () => {
             <path
                 d={pathData}
                 fill="none"
-                stroke="white"
+                stroke="#E5C48A"
                 strokeWidth="1"
                 filter="url(#glow)"
                 strokeLinecap="round"
@@ -195,7 +187,7 @@ const AnimatedGrowthChart = () => {
                     cx={point.x}
                     cy={point.y}
                     r="1.5"
-                    fill="white"
+                    fill="#FFD166"
                     filter="url(#glow)"
                     opacity={i === animatedPoints.length - 1 ? 1 : 0.7}
                 >
