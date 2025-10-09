@@ -59,45 +59,25 @@ function AnalysedTableComponent({ pageSet, currentPage }) {
     const isStartupUser = user?.StartupName ? true : false;
 
     // Function to save connection to localStorage
-    const handleSaveConnection = (item) => {
+    const handleSaveConnection = async(item) => {
         try {
-            // Get existing saved connections from localStorage
-            const existingSavedConnections = JSON.parse(localStorage.getItem('savedConnections') || '[]');
-            
-            // Create a standardized connection object
-            const connectionToSave = {
-                id: Date.now(), // Generate unique ID
-                name: isStartupUser ? item?.Investor_Name : item?.Founder_Name,
-                title: isStartupUser ? item?.Investor_Title : null,
-                company: isStartupUser ? item?.Investor_Company : item?.Startup_Company,
-                email: isStartupUser ? item?.Investor_Email : item?.Startup_Email,
-                location: isStartupUser ? item?.Investor_Location : item?.Startup_Location,
-                website: item?.Website || null,
-                linkedin: item?.LinkedIn || null,
-                facebook: item?.Facebook || null,
-                twitter: item?.Twitter || null,
-                savedAt: new Date().toISOString(),
-                userType: isStartupUser ? 'investor' : 'startup'
-            };
+         if(!userid){
+           toast.error("No userid Found")
+         }
+          
+         const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/addprofile`,{
+            "_id":userid,
+            "CurrentProfileId":item?.Startup_ID ? item?.Startup_ID : item?.Investor_ID
+         })
 
-            // Check if connection already exists (by email)
-            const alreadyExists = existingSavedConnections.some(
-                conn => conn.email === connectionToSave.email
-            );
+         if(res?.data?.exists){
+            return toast.error("Already added")
+         }
+        
+         if(res?.data?.updated){
+            return toast.success("Succesfully Added")
+         }
 
-            if (alreadyExists) {
-                toast.error('Connection already saved!');
-                return;
-            }
-
-            // Add new connection to the array
-            const updatedConnections = [...existingSavedConnections, connectionToSave];
-            
-            // Save to localStorage
-            localStorage.setItem('savedConnections', JSON.stringify(updatedConnections));
-            
-            // Show success message
-            toast.success('Connection saved successfully!');
         } catch (error) {
             console.error('Error saving connection:', error);
             toast.error('Failed to save connection');
@@ -170,7 +150,7 @@ function AnalysedTableComponent({ pageSet, currentPage }) {
                                                 {isStartupUser && (
                                                     <Table.Cell fontSize="12px">{item?.Investor_Title}</Table.Cell>
                                                 )}
-                                                <Table.Cell fontSize="12px">{isStartupUser ? item?.Investor_Company : item?.Startup_Company}</Table.Cell>
+                                                <Table.Cell fontSize="12px">{isStartupUser ? item?.Investor_Company : item?.Startup_Name}</Table.Cell>
                                                 <Table.Cell fontSize="12px">{isStartupUser ? item?.Investor_Email : item?.Startup_Email}</Table.Cell>
                                                 <Table.Cell fontSize="12px">{isStartupUser ? item?.Investor_Location : item?.Startup_Location}</Table.Cell>
                                                 <Table.Cell textAlign="center">

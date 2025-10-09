@@ -1,87 +1,96 @@
 "use client"
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText, Select, Textarea } from "@chakra-ui/react";
-import { useState ,useEffect} from "react";
+import { useState, useEffect } from "react";
 import SignupStartupStore from "../store/startupform";
 import axios from "axios"
 
 
 function ProfileStartupSecond({ pageSet }) {
-   //  const [BriefPitch, setBriefPitch] = useState("")
-   //  const [ProblemStatement, setProblemStatement] = useState("");
-   //  const [Solution, setSolution] = useState("");
-   //  const [BusinessModel, setBusinessModel] = useState("");
-   //  const [ElevatorPitch, setElevatorPitch] = useState("");
-   //  const [Competitors, setCompetitors] = useState("")
-    
-  const {BriefPitch,setBriefPitch,ProblemStatement,setProblemStatement,Solution,setSolution,BusinessModel,setBusinessModel,
-    ElevatorPitch,setElevatorPitch,Competitors,setCompetitors,FounderName,setFounderName,StartupWebsiteUrl,setStartupWebsiteUrl,
-    Location,setLocation,SocialMediaLink,setSocialMediaLink,CurrentStage,setCurrentStage,StartupIndustryCategories,setStartupIndustryCategories,
-    Password,setPassword,ConfirmPassword,setConfirmPassword,StartupName, setStartupName,CompanyEmail, setCompanyEmail  } = SignupStartupStore()
+    const { BriefPitch, setBriefPitch, ProblemStatement, setProblemStatement, Solution, setSolution, BusinessModel, setBusinessModel,
+        FundingRequirementINR, setFundingRequirementINR, Competitors, setCompetitors, FounderName, setFounderName, StartupWebsiteUrl, setStartupWebsiteUrl,
+        Location, setLocation, SocialMediaLink, setSocialMediaLink, CurrentStage, setCurrentStage, StartupIndustryCategories, setStartupIndustryCategories,
+        Password, setPassword, ConfirmPassword, setConfirmPassword, StartupName, setStartupName, CompanyEmail, setCompanyEmail } = SignupStartupStore()
 
-  
+    const handleFundingChange = (e) => {
+        const value = e.target.value;
 
-        async function StartUpSignupHandler(){
-            // Validate all fields before proceeding
-            if (!BriefPitch.trim()) {
-                return toast.error("Please enter Brief Pitch")
-            }
-            if (!ProblemStatement.trim()) {
-                return toast.error("Please enter Problem Statement")
-            }
-            if (!Solution.trim()) {
-                return toast.error("Please enter Solution")
-            }
-            if (!BusinessModel.trim()) {
-                return toast.error("Please enter Business Model")
-            }
-            if (!ElevatorPitch.trim()) {
-                return toast.error("Please enter Elevator Pitch")
-            }
-            if (!Competitors.trim()) {
-                return toast.error("Please enter Competitors & Differentiation")
-            }
-
-            if(Password === ConfirmPassword){
-                const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/signupstartup`, {
-                    "StartupName": StartupName,
-                    "CompanyEmail": CompanyEmail,
-                    "Password": Password,
-                    "ConfirmPassword": ConfirmPassword,
-                    "FounderName": FounderName,
-                    "StartupWebsiteUrl": StartupWebsiteUrl,
-                    "Location": Location,
-                    "SocialMediaLink": SocialMediaLink,
-                    "CurrentStage": CurrentStage,
-                    "StartupIndustryCategories": StartupIndustryCategories,
-                    "BriefPitch": BriefPitch,
-                    "ProblemStatement": ProblemStatement,
-                    "Solution": Solution,
-                    "BusinessModel": BusinessModel,
-                    "ElevatorPitch": ElevatorPitch,
-                    "Competitors": Competitors,
-
-                })
-
-
-                if(res.data.message === "success"){
-                    setTimeout(() => {
-                        pageSet(11)
-                    }, 1500)
-                    return toast.success("User Successfully added")
-                }
-                else{
-                   return toast.error("Error signup")
-                }
-            }
-   
-            
-            setTimeout(()=>{
-                pageSet(1)
-            },1500)
-            return toast.error("Passwords should match.")
-            
+        // Allow empty string for clearing
+        if (value === "") {
+            setFundingRequirementINR("");
+            return;
         }
+
+        // Check if the value contains only numbers
+        if (/^\d+$/.test(value)) {
+            setFundingRequirementINR(value);
+        } else {
+            toast.error("Please enter numbers only");
+        }
+    };
+
+    async function StartUpSignupHandler() {
+        // Validate all fields before proceeding
+        if (!BriefPitch.trim()) {
+            return toast.error("Please enter Brief Pitch")
+        }
+        if (!ProblemStatement.trim()) {
+            return toast.error("Please enter Problem Statement")
+        }
+        if (!Solution.trim()) {
+            return toast.error("Please enter Solution")
+        }
+        if (!BusinessModel.trim()) {
+            return toast.error("Please enter Business Model")
+        }
+        if (!FundingRequirementINR.trim()) {
+            return toast.error("Please enter Funding Requirement")
+        }
+        if (!Competitors.trim()) {
+            return toast.error("Please enter Competitors & Differentiation")
+        }
+
+        if (Password === ConfirmPassword) {
+            const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/signupstartup`, {
+                "StartupName": StartupName,
+                "CompanyEmail": CompanyEmail,
+                "Password": Password,
+                "ConfirmPassword": ConfirmPassword,
+                "FounderName": FounderName,
+                "StartupWebsiteUrl": StartupWebsiteUrl,
+                "Location": Location,
+                "SocialMediaLink": SocialMediaLink,
+                "CurrentStage": CurrentStage,
+                "StartupIndustryCategories": StartupIndustryCategories,
+                "BriefPitch": BriefPitch,
+                "ProblemStatement": ProblemStatement,
+                "Solution": Solution,
+                "BusinessModel": BusinessModel,
+                "FundingRequirementINR": FundingRequirementINR,
+                "Competitors": Competitors,
+
+            })
+
+
+            if (res.data.message === "success") {
+                setTimeout(() => {
+                    pageSet(11)
+                }, 1500)
+                return toast.success("User Successfully added")
+            }
+            else {
+                return toast.error("Error signup")
+            }
+        }
+
+
+        setTimeout(() => {
+            pageSet(1)
+        }, 1500)
+        return toast.error("Passwords should match.")
+
+    }
+
     useEffect(() => {
         const temp = localStorage.getItem("token")
         temp !== null ? pageSet(11) : null
@@ -211,25 +220,41 @@ function ProfileStartupSecond({ pageSet }) {
                             gap={4}
                         >
 
-                            {/* Brief Pitch (Tagline) */}
+                            {/* Funding Requirement (INR)*/}
                             <Box height={["100%"]} width={["100%"]} display={"flex"} justifyContent={"center"} alignItems={"flex-start"}>
                                 <Field.Root required style={{ height: "80%", width: "90%" }}>
                                     <Field.Label color="white" fontFamily="Poppins">
-                                        Brief Pitch (Tagline) <Field.RequiredIndicator />
+                                        Funding Requirement (INR) <Field.RequiredIndicator />
                                     </Field.Label>
-                                    <Input
-                                        placeholder="e.g. Revolutionizing clean energy for rural areas"
-                                        value={BriefPitch}
-                                        onChange={(e) => setBriefPitch(e.target.value)}
-                                        height="100%"
-                                        width="100%"
-                                        bgColor="rgba(255, 255, 255, 0.1)"
-                                        color="white"
-                                        fontFamily="Poppins"
-                                        border="1px solid #FFF"
-                                    />
+                                    <Box position="relative" width="100%">
+                                        <Box
+                                            position="absolute"
+                                            left="12px"
+                                            top="50%"
+                                            transform="translateY(-50%)"
+                                            color="white"
+                                            fontSize="14px"
+                                            fontFamily="Poppins"
+                                            pointerEvents="none"
+                                            zIndex={1}
+                                        >
+                                            ₹
+                                        </Box>
+                                        <Input
+                                            placeholder="e.g. 500000"
+                                            value={FundingRequirementINR}
+                                            onChange={handleFundingChange}
+                                            paddingLeft="30px"
+                                            height="40px"
+                                            width="100%"
+                                            bgColor="rgba(255, 255, 255, 0.1)"
+                                            color="white"
+                                            fontFamily="Poppins"
+                                            border="1px solid #FFF"
+                                        />
+                                    </Box>
                                     <Field.HelperText color="rgba(255, 255, 255, 0.7)" fontSize="11px">
-                                        One catchy sentence.
+                                        Enter the full required amount in INR.
                                     </Field.HelperText>
                                 </Field.Root>
                             </Box>
@@ -309,27 +334,25 @@ function ProfileStartupSecond({ pageSet }) {
                                 </Field.Root>
                             </Box>
 
-                            {/* Elevator Pitch / Description */}
+                            {/* Brief Pitch (Tagline)*/}
                             <Box height={["100%"]} width={["100%"]} display={"flex"} justifyContent={"center"} alignItems={"flex-start"}>
                                 <Field.Root required style={{ height: "80%", width: "90%" }}>
                                     <Field.Label color="white" fontFamily="Poppins">
-                                        Elevator Pitch / Description <Field.RequiredIndicator />
+                                        Brief Pitch (Tagline) <Field.RequiredIndicator />
                                     </Field.Label>
-                                    <Textarea
-                                        placeholder="e.g. We create affordable solar-powered devices to bring electricity to underserved communities."
-                                        value={ElevatorPitch}
-                                        onChange={(e) => setElevatorPitch(e.target.value)}
-                                        maxLength={200}
+                                    <Input
+                                        placeholder="e.g. Revolutionizing clean energy for rural areas"
+                                        value={BriefPitch}
+                                        onChange={(e) => setBriefPitch(e.target.value)}
                                         height="100%"
                                         width="100%"
                                         bgColor="rgba(255, 255, 255, 0.1)"
                                         color="white"
                                         fontFamily="Poppins"
                                         border="1px solid #FFF"
-                                        resize="none"
                                     />
                                     <Field.HelperText color="rgba(255, 255, 255, 0.7)" fontSize="11px">
-                                        Keep short and impactful. ({ElevatorPitch.length}/200)
+                                        One catchy sentence.
                                     </Field.HelperText>
                                 </Field.Root>
                             </Box>
@@ -370,7 +393,7 @@ function ProfileStartupSecond({ pageSet }) {
                             }}
                             transition="all 0.5s ease"
 
-                            onClick={()=>StartUpSignupHandler()}>    Sign Up  </Button>
+                            onClick={() => StartUpSignupHandler()}>    Sign Up  </Button>
 
                     </Box>
                 </Box>

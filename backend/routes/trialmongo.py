@@ -8,26 +8,27 @@ from dotenv import load_dotenv
 from typing import Dict, Any, Optional, Tuple, List
 from bson import ObjectId
 from datetime import datetime
-from db.db import db_main, client
+# from db.db import db_main, client
 from pymongo import MongoClient
-from flask import Blueprint, request,jsonify
+# from flask import Blueprint, request
 import re
 
 load_dotenv()
 
-llm_bp_model = Blueprint("llmmodel", __name__)
+# llm_bp_model = Blueprint("llmmodel", __name__)
 
-@llm_bp_model.route("/modelanalysis", methods=["POST"])
+# @llm_bp_model.route("/modelanalysis", methods=["POST"])
 def LLM():
-    data = request.json
-    if not data:
-        return  jsonify({"Success": False, "message": "No data provided in request."}), 400
+    # data = request.json
+    # if not data:
+    #     return  ({"Success": False, "message": "No data provided in request."}), 400
+    data={"UserId":"69f8a1b3cdef45a678901234","isStartup":True}
         
     User_id = data.get("UserId")
     isStartup = data.get("isStartup")
 
     if User_id is None or isStartup is None:
-        return  jsonify({"Success": False, "message": "UserId and isStartup fields are required."}), 400
+        return  ({"Success": False, "message": "UserId and isStartup fields are required."}), 400
 
     USE_GEMINI = True
 
@@ -37,7 +38,7 @@ def LLM():
             print("✅ Gemini API configured")
         except Exception as e:
             print(f"❌ Error configuring Gemini API: {e}")
-            return  jsonify({"Success": False, "message": f"API configuration error: {e}"})
+            return  ({"Success": False, "message": f"API configuration error: {e}"})
     else:
         # Placeholder for OpenAI API configuration if needed
         print("OpenAI configuration not implemented in this version.")
@@ -58,17 +59,17 @@ def LLM():
         "investor_collection": "investor",
         "matches_collection": "matches"
     }
-    # def connect_to_mongo():
-    #     client = MongoClient(
-    #         MONGODB_CONFIG['connection_string']
-    #         )
-    #     db_main = client[MONGODB_CONFIG['database_name']]
+    def connect_to_mongo():
+        client = MongoClient(
+            MONGODB_CONFIG['connection_string']
+            )
+        db_main = client[MONGODB_CONFIG['database_name']]
 
-    #     return client, db_main
+        return client, db_main
     def get_database_collections():
         """Connect to MongoDB and return collections."""
         try:
-            # client, db_main = connect_to_mongo()
+            client, db_main = connect_to_mongo()
             startup_collection = db_main["startup"]
             investor_collection = db_main["investor"]
             matches_collection = db_main["matches"]
@@ -77,7 +78,24 @@ def LLM():
             return startup_collection, investor_collection, matches_collection
         except Exception as e:
             print(f"❌ MongoDB connection error: {e}")
-            return None, None, None    
+            return None, None, None
+
+    def parse_check_size(check_range_str: str) -> Tuple[float, float]:
+        """
+        A robust parser for strings like '₹50 L - ₹1.5 Cr' into min/max float values in INR.
+        """
+        multipliers = {'l': 100000, 'cr': 10000000}
+        matches = re.findall(r'([\d\.]+)\s*(L|Cr)', str(check_range_str), re.IGNORECASE)
+        
+        values_inr = [float(value_str) * multipliers[unit_str.lower()] for value_str, unit_str in matches]
+            
+        if not values_inr:
+            return 0, float('inf') 
+        
+        min_val = values_inr[0]
+        max_val = values_inr[1] if len(values_inr) > 1 else (min_val if '+' not in str(check_range_str) else float('inf'))
+            
+        return min_val, max_val
 
     def get_filtered_investor_candidates_from_mongo(
         investor_collection: Any, 
@@ -155,6 +173,7 @@ def LLM():
             return {
                 "FirmName": safe_get('FirmName', 'Unknown Firm'),"BioThesis": safe_get('BioThesis', 'Not available'),
                 "SelectedIndustries": parse_stringified_list(safe_get('SelectedIndustries', [])),
+                # "CheckSizeRange": str(safe_get('CheckSizeRange', '0L - 0L')),
                 "check_size_min_inr": int(safe_get('check_size_min_inr', 0)),
                 "check_size_max_inr": int(safe_get('check_size_max_inr', 1000000000)),
                 "InvestorLocation": str(safe_get('InvestorLocation', 'Not specified')),
@@ -313,8 +332,7 @@ def LLM():
                 investor=investor_collection.find_one({"_id": ObjectId(investor_id)})
                 
                 if investor and startup:
-                    investor_name=str(investor.get("Username","Not Available"))
-                    investor_id=str(investor.get("_id","Not Available"))
+                    investor_name=str(investor.get("FirmName","Not Available"))
                     inv_email=str(investor.get("CompanyEmail","Not Available"))
                     inv_company=str(investor.get("FirmName","Unknown Company"))
                     investor_location=str(investor.get("InvestorLocation","__"))
@@ -325,7 +343,6 @@ def LLM():
                     
                     investor_profiles.append({
                         "Investor_Name":investor_name,
-                        "Investor_ID":investor_id,
                         "Investor_Company":inv_company,
                         "Investor_Email":inv_email,
                         "Investor_Location":investor_location,
@@ -369,7 +386,6 @@ def LLM():
                 
                 if startup and investor:
                     startup_name = str(startup.get("StartupName", "Unknown Startup"))
-                    startup_id = str(startup.get("_id","Not Available"))
                     founder_name = str(startup.get("FounderName", "Unknown Founder"))
                     startup_email = str(startup.get("CompanyEmail", "Not Available"))
                     startup_location = str(startup.get("Location", "__"))
@@ -378,7 +394,6 @@ def LLM():
                     
                     startup_profiles.append({
                         "Startup_Name": startup_name,
-                        "Startup_ID":startup_id,
                         "Founder_Name": founder_name,
                         "Startup_Email": startup_email,
                         "Startup_Location": startup_location,
@@ -444,7 +459,12 @@ def LLM():
             
         print(f"Retrieved {len(result)} final matches.")
         print(result)
-        return {"Success": True, "result": result}
+        # return {"Success": True, "result": result}
+        return result
     
     # --- Entry point of the Flask route ---
-    return jsonify(run_matching_pipeline(isStartup, User_id))
+    return run_matching_pipeline(isStartup, User_id)
+
+if __name__ == "__main__":
+    LLM()
+    # print([[startup['Overall_Score']] for startup in result])
