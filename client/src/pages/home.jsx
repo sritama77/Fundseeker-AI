@@ -1,9 +1,243 @@
 "use client"
 import toast, { Toaster } from 'react-hot-toast';
 import { Box, Flex, Image, Text, Button, Input, InputGroup, Field, FieldLabel, FieldRoot, FieldErrorText } from "@chakra-ui/react";
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Search, BarChart3, Puzzle, MessageSquare, Check } from 'lucide-react';
 import Navbar from '../components/ui/navbar'; 
+
+// Animated Chart Component
+const AnimatedGrowthChart = () => {
+    const [animationProgress, setAnimationProgress] = useState(0);
+    const [showIcons, setShowIcons] = useState([]);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            if (animationProgress < 100) {
+                setAnimationProgress(prev => Math.min(prev + 2, 100));
+            } else {
+                // Hold for 5 seconds then restart
+                setTimeout(() => {
+                    setAnimationProgress(0);
+                    setShowIcons([]);
+                }, 5000);
+            }
+        }, 20);
+        return () => clearTimeout(timer);
+    }, [animationProgress]);
+
+    // Add icons as animation progresses
+    useEffect(() => {
+        if (animationProgress > 15 && !showIcons.includes(0)) {
+            setShowIcons(prev => [...prev, 0]);
+        }
+        if (animationProgress > 25 && !showIcons.includes(1)) {
+            setShowIcons(prev => [...prev, 1]);
+        }
+        if (animationProgress > 35 && !showIcons.includes(2)) {
+            setShowIcons(prev => [...prev, 2]);
+        }
+        if (animationProgress > 45 && !showIcons.includes(3)) {
+            setShowIcons(prev => [...prev, 3]);
+        }
+        if (animationProgress > 55 && !showIcons.includes(4)) {
+            setShowIcons(prev => [...prev, 4]);
+        }
+        if (animationProgress > 65 && !showIcons.includes(5)) {
+            setShowIcons(prev => [...prev, 5]);
+        }
+        if (animationProgress > 75 && !showIcons.includes(6)) {
+            setShowIcons(prev => [...prev, 6]);
+        }
+        if (animationProgress > 85 && !showIcons.includes(7)) {
+            setShowIcons(prev => [...prev, 7]);
+        }
+    }, [animationProgress, showIcons]);
+
+    const points = [
+        { x: 10, y: 80 },
+        { x: 25, y: 70 },
+        { x: 40, y: 55 },
+        { x: 55, y: 45 },
+        { x: 70, y: 25 },
+        { x: 85, y: 15 }
+    ];
+
+    const getAnimatedPoints = () => {
+        const progress = animationProgress / 100;
+        const numPoints = Math.floor(progress * points.length);
+        return points.slice(0, Math.max(1, numPoints + 1));
+    };
+
+    const animatedPoints = getAnimatedPoints();
+    const pathData = animatedPoints.map((point, i) => 
+        `${i === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
+    ).join(' ');
+
+    const areaData = `${pathData} L ${animatedPoints[animatedPoints.length - 1].x} 100 L ${animatedPoints[0].x} 100 Z`;
+
+    // Icon positions scattered around the chart (avoiding the line path)
+    const iconPositions = [
+        { x: 8, y: 85, type: 'user', delay: 0 },
+        { x: 15, y: 15, type: 'world', delay: 0.2 },
+        { x: 30, y: 88, type: 'handshake', delay: 0.4 },
+        { x: 50, y: 10, type: 'search', delay: 0.6 },
+        { x: 70, y: 85, type: 'chat', delay: 0.8 },
+        { x: 85, y: 55, type: 'user', delay: 1.0 },
+        { x: 92, y: 15, type: 'handshake', delay: 1.2 },
+        { x: 5, y: 40, type: 'chat', delay: 1.4 }
+    ];
+
+    return (
+        <Box position="relative" width="100%" height="100%">
+            {/* Floating Icons */}
+            {iconPositions.map((pos, i) => (
+                showIcons.includes(i) && (
+                    <Box
+                        key={i}
+                        position="absolute"
+                        left={`${pos.x}%`}
+                        top={`${pos.y}%`}
+                        transform="translate(-50%, -50%)"
+                        animation="popIn 0.5s ease-out, float 3s ease-in-out infinite"
+                        style={{
+                            animationDelay: `${pos.delay}s, ${pos.delay}s`
+                        }}
+                    >
+                        {pos.type === 'user' && (
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="8" r="4" fill="white" opacity="0.85"/>
+                                <path d="M4 20c0-4 3.5-7 8-7s8 3 8 7" stroke="white" strokeWidth="2" fill="none" opacity="0.85"/>
+                            </svg>
+                        )}
+                        {pos.type === 'handshake' && (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                <path d="M20 8L16 12L14 10L18 6L20 8Z" fill="white" opacity="0.85"/>
+                                <path d="M4 8L8 12L10 10L6 6L4 8Z" fill="white" opacity="0.85"/>
+                                <rect x="9" y="10" width="6" height="3" rx="1" fill="white" opacity="0.85"/>
+                                <path d="M7 14L5 16M17 14L19 16M7 18L5 20M17 18L19 20" stroke="white" strokeWidth="2" strokeLinecap="round" opacity="0.85"/>
+                            </svg>
+                        )}
+                        {pos.type === 'world' && (
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="12" r="9" stroke="white" strokeWidth="2" opacity="0.85"/>
+                                <path d="M3 12h18M12 3c2.5 3 2.5 6 2.5 9s0 6-2.5 9M12 3c-2.5 3-2.5 6-2.5 9s0 6 2.5 9" stroke="white" strokeWidth="1.5" opacity="0.85"/>
+                                <ellipse cx="12" cy="12" rx="4" ry="9" stroke="white" strokeWidth="1.5" opacity="0.85"/>
+                            </svg>
+                        )}
+                        {pos.type === 'search' && (
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                                <circle cx="10" cy="10" r="6" stroke="white" strokeWidth="2" opacity="0.85"/>
+                                <path d="M14.5 14.5L20 20" stroke="white" strokeWidth="2.5" strokeLinecap="round" opacity="0.85"/>
+                            </svg>
+                        )}
+                        {pos.type === 'chat' && (
+                            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                                <path d="M3 6C3 4.34315 4.34315 3 6 3H18C19.6569 3 21 4.34315 21 6V14C21 15.6569 19.6569 17 18 17H11L6 21V17H6C4.34315 17 3 15.6569 3 14V6Z" fill="white" opacity="0.85"/>
+                                <circle cx="8" cy="10" r="1" fill="#1062F2"/>
+                                <circle cx="12" cy="10" r="1" fill="#1062F2"/>
+                                <circle cx="16" cy="10" r="1" fill="#1062F2"/>
+                            </svg>
+                        )}
+                    </Box>
+                )
+            ))}
+
+            <svg width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
+            <defs>
+                <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" stopColor="rgba(255, 255, 255, 0.4)" />
+                    <stop offset="100%" stopColor="rgba(255, 255, 255, 0.05)" />
+                </linearGradient>
+                <filter id="glow">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+                    <feMerge>
+                        <feMergeNode in="coloredBlur"/>
+                        <feMergeNode in="SourceGraphic"/>
+                    </feMerge>
+                </filter>
+            </defs>
+            
+            {/* Grid lines */}
+            {[20, 40, 60, 80].map(y => (
+                <line 
+                    key={y}
+                    x1="0" 
+                    y1={y} 
+                    x2="100" 
+                    y2={y} 
+                    stroke="rgba(255, 255, 255, 0.1)" 
+                    strokeWidth="0.2"
+                />
+            ))}
+            
+            {/* Area fill */}
+            <path
+                d={areaData}
+                fill="url(#chartGradient)"
+                opacity="0.6"
+            />
+            
+            {/* Line */}
+            <path
+                d={pathData}
+                fill="none"
+                stroke="white"
+                strokeWidth="1"
+                filter="url(#glow)"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+            
+            {/* Animated dots */}
+            {animatedPoints.map((point, i) => (
+                <circle
+                    key={i}
+                    cx={point.x}
+                    cy={point.y}
+                    r="1.5"
+                    fill="white"
+                    filter="url(#glow)"
+                    opacity={i === animatedPoints.length - 1 ? 1 : 0.7}
+                >
+                    {i === animatedPoints.length - 1 && (
+                        <animate
+                            attributeName="r"
+                            values="1.5;2.5;1.5"
+                            dur="1.5s"
+                            repeatCount="indefinite"
+                        />
+                    )}
+                </circle>
+            ))}
+        </svg>
+
+        {/* Add CSS animations */}
+        <style>{`
+            @keyframes popIn {
+                0% {
+                    transform: translate(-50%, -50%) scale(0);
+                    opacity: 0;
+                }
+                50% {
+                    transform: translate(-50%, -50%) scale(1.2);
+                }
+                100% {
+                    transform: translate(-50%, -50%) scale(1);
+                    opacity: 1;
+                }
+            }
+            @keyframes float {
+                0%, 100% {
+                    transform: translate(-50%, -50%) translateY(0px);
+                }
+                50% {
+                    transform: translate(-50%, -50%) translateY(-10px);
+                }
+            }
+        `}</style>
+    </Box>
+    );
+};
 
 // Tilting Tile Component
 const TiltingTile = ({ icon: IconComponent, title, description, height = "100%", width = "95%" }) => {
@@ -175,11 +409,15 @@ function HomePage({ pageSet, currentPage }) {
                         display="flex"
                         justifyContent="center"
                         alignItems="center"
-                        bgColor="#1062F2"
+                        //bgColor="#1062F2"
                         borderRadius="15px"
                         boxShadow="0 8px 32px rgba(0, 0, 0, 0.1)"
                         position="relative"
-                    ></Box>
+                        overflow="hidden"
+                        padding="20px"
+                    >
+                        <AnimatedGrowthChart />
+                    </Box>
                 </Box>
             </Box>
 

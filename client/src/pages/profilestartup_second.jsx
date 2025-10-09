@@ -7,21 +7,27 @@ import axios from "axios"
 
 
 function ProfileStartupSecond({ pageSet }) {
-    const [isFundingDropdownOpen, setIsFundingDropdownOpen] = useState(false);
-
     const { BriefPitch, setBriefPitch, ProblemStatement, setProblemStatement, Solution, setSolution, BusinessModel, setBusinessModel,
         FundingRequirementINR, setFundingRequirementINR, Competitors, setCompetitors, FounderName, setFounderName, StartupWebsiteUrl, setStartupWebsiteUrl,
         Location, setLocation, SocialMediaLink, setSocialMediaLink, CurrentStage, setCurrentStage, StartupIndustryCategories, setStartupIndustryCategories,
         Password, setPassword, ConfirmPassword, setConfirmPassword, StartupName, setStartupName, CompanyEmail, setCompanyEmail } = SignupStartupStore()
 
-    const fundingOptions = [
-        "₹5 L - ₹20 L",
-        "₹20 L - ₹40 L",
-        "₹40 L - ₹60 L",
-        "₹60 L - ₹80 L",
-        "₹80 L - ₹1 Cr",
-        "₹1 Cr+"
-    ];
+    const handleFundingChange = (e) => {
+        const value = e.target.value;
+
+        // Allow empty string for clearing
+        if (value === "") {
+            setFundingRequirementINR("");
+            return;
+        }
+
+        // Check if the value contains only numbers
+        if (/^\d+$/.test(value)) {
+            setFundingRequirementINR(value);
+        } else {
+            toast.error("Please enter numbers only");
+        }
+    };
 
     async function StartUpSignupHandler() {
         // Validate all fields before proceeding
@@ -38,7 +44,7 @@ function ProfileStartupSecond({ pageSet }) {
             return toast.error("Please enter Business Model")
         }
         if (!FundingRequirementINR.trim()) {
-            return toast.error("Please select Funding Requirement")
+            return toast.error("Please enter Funding Requirement")
         }
         if (!Competitors.trim()) {
             return toast.error("Please enter Competitors & Differentiation")
@@ -90,20 +96,6 @@ function ProfileStartupSecond({ pageSet }) {
         temp !== null ? pageSet(11) : null
 
     }, [])
-
-    // Handle click outside to close dropdown
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (isFundingDropdownOpen && !event.target.closest('.funding-dropdown-container')) {
-                setIsFundingDropdownOpen(false);
-            }
-        };
-
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, [isFundingDropdownOpen]);
 
     return (
         <Box
@@ -234,86 +226,35 @@ function ProfileStartupSecond({ pageSet }) {
                                     <Field.Label color="white" fontFamily="Poppins">
                                         Funding Requirement (INR) <Field.RequiredIndicator />
                                     </Field.Label>
-                                    <Box position="relative" width="100%" className="funding-dropdown-container">
-                                        {/* Custom Single-Select Container */}
+                                    <Box position="relative" width="100%">
                                         <Box
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                setIsFundingDropdownOpen(!isFundingDropdownOpen);
-                                            }}
-                                            minHeight="40px"
+                                            position="absolute"
+                                            left="12px"
+                                            top="50%"
+                                            transform="translateY(-50%)"
+                                            color="white"
+                                            fontSize="14px"
+                                            fontFamily="Poppins"
+                                            pointerEvents="none"
+                                            zIndex={1}
+                                        >
+                                            ₹
+                                        </Box>
+                                        <Input
+                                            placeholder="e.g. 500000"
+                                            value={FundingRequirementINR}
+                                            onChange={handleFundingChange}
+                                            paddingLeft="30px"
+                                            height="40px"
                                             width="100%"
                                             bgColor="rgba(255, 255, 255, 0.1)"
                                             color="white"
                                             fontFamily="Poppins"
                                             border="1px solid #FFF"
-                                            borderRadius="md"
-                                            paddingX="12px"
-                                            paddingY="8px"
-                                            cursor="pointer"
-                                            display="flex"
-                                            alignItems="center"
-                                            justifyContent="space-between"
-                                            _hover={{
-                                                bgColor: "rgba(255, 255, 255, 0.15)"
-                                            }}
-                                        >
-                                            <Text 
-                                                color={FundingRequirementINR === "" ? "rgba(255, 255, 255, 0.5)" : "white"}
-                                                fontSize="14px"
-                                            >
-                                                {FundingRequirementINR === "" ? "e.g. ₹20 L - ₹40 L" : FundingRequirementINR}
-                                            </Text>
-                                            <Text fontSize="12px" marginLeft="8px">
-                                                {isFundingDropdownOpen ? '▲' : '▼'}
-                                            </Text>
-                                        </Box>
-
-                                        {/* Dropdown Options */}
-                                        {isFundingDropdownOpen && (
-                                            <Box
-                                                position="absolute"
-                                                top="100%"
-                                                left={0}
-                                                right={0}
-                                                bg="rgba(3, 63, 121, 0.98)"
-                                                border="1px solid #FFF"
-                                                borderRadius="md"
-                                                maxHeight="200px"
-                                                overflowY="auto"
-                                                zIndex={10000}
-                                                mt={1}
-                                                boxShadow="0 4px 6px rgba(0, 0, 0, 0.3)"
-                                            >
-                                                {fundingOptions.map((option) => (
-                                                    <Box
-                                                        key={option}
-                                                        px={3}
-                                                        py={2}
-                                                        cursor="pointer"
-                                                        color="white"
-                                                        fontFamily="Poppins"
-                                                        fontSize="14px"
-                                                        display="flex"
-                                                        alignItems="center"
-                                                        _hover={{
-                                                            bg: "rgba(229, 196, 138, 0.3)"
-                                                        }}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            setFundingRequirementINR(option);
-                                                            setIsFundingDropdownOpen(false);
-                                                        }}
-                                                        bg={FundingRequirementINR === option ? "rgba(229, 196, 138, 0.3)" : "transparent"}
-                                                    >
-                                                        <Text>{option}</Text>
-                                                    </Box>
-                                                ))}
-                                            </Box>
-                                        )}
+                                        />
                                     </Box>
                                     <Field.HelperText color="rgba(255, 255, 255, 0.7)" fontSize="11px">
-                                        Select your funding requirement range.
+                                        Enter the full required amount in INR.
                                     </Field.HelperText>
                                 </Field.Root>
                             </Box>
