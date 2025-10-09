@@ -313,7 +313,7 @@ def LLM():
                 investor=investor_collection.find_one({"_id": ObjectId(investor_id)})
                 
                 if investor and startup:
-                    investor_name=str(investor.get("FirmName","Not Available"))
+                    investor_name=str(investor.get("Username","Not Available"))
                     investor_id=str(investor.get("_id","Not Available"))
                     inv_email=str(investor.get("CompanyEmail","Not Available"))
                     inv_company=str(investor.get("FirmName","Unknown Company"))

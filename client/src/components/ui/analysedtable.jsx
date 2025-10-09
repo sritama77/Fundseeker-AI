@@ -150,7 +150,7 @@ function AnalysedTableComponent({ pageSet, currentPage }) {
                                                 {isStartupUser && (
                                                     <Table.Cell fontSize="12px">{item?.Investor_Title}</Table.Cell>
                                                 )}
-                                                <Table.Cell fontSize="12px">{isStartupUser ? item?.Investor_Company : item?.Startup_Company}</Table.Cell>
+                                                <Table.Cell fontSize="12px">{isStartupUser ? item?.Investor_Company : item?.Startup_Name}</Table.Cell>
                                                 <Table.Cell fontSize="12px">{isStartupUser ? item?.Investor_Email : item?.Startup_Email}</Table.Cell>
                                                 <Table.Cell fontSize="12px">{isStartupUser ? item?.Investor_Location : item?.Startup_Location}</Table.Cell>
                                                 <Table.Cell textAlign="center">
