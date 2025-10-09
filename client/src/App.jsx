@@ -18,7 +18,7 @@ import  axios from "axios"
 function App() {
 const [page, setPage] = useState(8)
 const [token,setToken] = useState(null)
-const  {user,setUser} = UserDetails()
+const  {user,setUser,Reload,setReload} = UserDetails()
 
 async function getUserDetails(token){
 
@@ -41,6 +41,15 @@ const temp = localStorage.getItem("token")
 temp === null ? setToken(null) : setToken(temp)
 getUserDetails(temp)
 },[])
+
+useEffect(()=>{
+  if(Reload){
+const temp = localStorage.getItem("token")
+temp === null ? setToken(null) : setToken(temp)
+getUserDetails(temp)
+setReload(false)
+}
+},[Reload])
 
 console.log("Current page:", page);
   return (

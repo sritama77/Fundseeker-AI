@@ -612,7 +612,9 @@ Provide specific, actionable justifications based on the actual data provided.
                 investor=investor_collection.find_one({"_id": ObjectId(investor_id)})
                 
                 if investor and startup:
+                    
                     startup_name=str(startup.get("StartupName","Not Available"))
+                    investor_id=str(investor.get("_id","Not Available"))
                     investor_name=str(investor.get("FirmName","Not Available"))
                     inv_email=str(investor.get("CompanyEmail","Not Available"))
                     inv_company=str(investor.get("FirmName","Unknown Company"))
@@ -624,6 +626,7 @@ Provide specific, actionable justifications based on the actual data provided.
                     
                     investor_profiles.append({
                         "Startup_name":startup_name,
+                        "Investor_ID":investor_id,
                         "Investor_Name":investor_name,
                         "Investor_Company":inv_company,
                         "Investor_Email":inv_email,
@@ -666,6 +669,7 @@ Provide specific, actionable justifications based on the actual data provided.
                 investor = investor_collection.find_one({"_id": ObjectId(investor_id_match)})
                 
                 if startup and investor:
+                    startup_id = str(startup.get("_id","Not Available"))
                     startup_name = str(startup.get("StartupName", "Unknown Startup"))
                     founder_name = str(startup.get("FounderName", "Unknown Founder"))
                     startup_email = str(startup.get("CompanyEmail", "Not Available"))
@@ -674,6 +678,7 @@ Provide specific, actionable justifications based on the actual data provided.
                     overall_score_val = match.get("overall_score", 0)
                     
                     startup_profiles.append({
+                        "Startup_ID":startup_id,
                         "Startup_Name": startup_name,
                         "Founder_Name": founder_name,
                         "Startup_Email": startup_email,

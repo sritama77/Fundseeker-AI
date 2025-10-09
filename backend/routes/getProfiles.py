@@ -7,10 +7,11 @@ get_profiles = Blueprint("getProfiles",__name__)
 startup_collection = db_main["startup"]
 investor_collection = db_main["investor"]
 cart_collection = db_main["cart"]
-profile_collections = []
+
 @get_profiles.route("/getprofiles",methods = ["GET"])
 def GetProfile():
     userid = request.args.get("userid")
+    profile_collections = []
 
     data = cart_collection.find_one({"userid":ObjectId(userid)})
     for items in data["profilesid"]:

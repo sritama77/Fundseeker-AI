@@ -5,12 +5,13 @@ import { useState ,useEffect} from "react"
 import { Mail, KeyRound } from 'lucide-react';
 import { PasswordInput } from "../components/ui/password-input"
 import axios from 'axios';
+import UserDetails from '../store/userform';
 
 function LoginPage({ pageSet }) {
   const [Password, setPassword] = useState("")
   const [Email, setEmail] = useState("")
   const [isEmailValid, setIsEmailValid] = useState(true)
-
+ const {Reload,setReload} = UserDetails()
 
   useEffect(() => {
     const temp = localStorage.getItem("token")
@@ -47,6 +48,7 @@ function LoginPage({ pageSet }) {
       const token = resInvestor?.data?.id ? resInvestor?.data?.id : resStartup?.data?.id
 
       localStorage.setItem("token", token)
+      setReload(true)
       return toast.success("Logged in Successfully")
     }
     else {
