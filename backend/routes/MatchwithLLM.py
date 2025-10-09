@@ -654,8 +654,7 @@ Provide specific, actionable justifications based on the actual data provided.
                 {"investor_id": investor_id, "overall_score": {"$gt": 0}}
             ).sort("overall_score", -1).limit(top_k))
             
-            print(f"Found {len(matches)} matches for investor {investor_id}")
-            
+            print(f"Found {len(matches)} matches for investor {investor_id}, {matches}")
             startup_profiles = []
             if investor_collection is None or startup_collection is None:
                 return []
@@ -682,7 +681,7 @@ Provide specific, actionable justifications based on the actual data provided.
                         "Startup_Website": startup_website,
                         "Overall_Score": overall_score_val
                     })
-            
+            print(startup_profiles)
             return startup_profiles
         
         except Exception as e:
@@ -823,6 +822,7 @@ Provide specific, actionable justifications based on the actual data provided.
             return candidate_investors
         finally:
             print("Startup pipeline completed.")
+            
     def run_investor_matching_pipeline(investor_id: str):
         startup_collection, investor_collection, _, client = get_database_collections()
         if startup_collection is None or investor_collection is None or client is None:
@@ -855,9 +855,6 @@ Provide specific, actionable justifications based on the actual data provided.
             print("close")
 
     def main(isStartup:bool):            
-        candidate_investors=run_matching_startup_pipeline(startup_id=User_id, funding_amount_inr=12500000, top_k=10)
-        create_matches_trial(isStartup,candidates=candidate_investors)    
-
         if isStartup:
             candidate_investors=run_matching_startup_pipeline(startup_id=User_id, funding_amount_inr=12500000, top_k=10)
             create_matches_trial(isStartup,candidates=candidate_investors) 

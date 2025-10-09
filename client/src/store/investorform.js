@@ -16,6 +16,8 @@ const SignupInvestorStore = create((set) => ({
     TicketType: [],
     CompanyEmail: "",
     InvestorTitle: "",
+    check_size_min_inr:"",
+    check_size_max_inr:"",
 
     setPassword: (data) => set({ Password: data }),
     setConfirmPassword: (data) => set({ ConfirmPassword: data }),
@@ -32,17 +34,20 @@ const SignupInvestorStore = create((set) => ({
     setTicketType: (data) => set({ TicketType: data }),
     setCompanyEmail: (data) => set({CompanyEmail: data}),
     setInvestorTitle: (data) => set({InvestorTitle:data}),
+    setcheck_size_min_inr: (data) => set({check_size_min_inr:data}),
+    setcheck_size_max_inr: (data) => set({check_size_max_inr:data}),
 
-    // Check Size Range methods
-    handleCheckSizeToggle: (size) => set((state) => ({
-        CheckSizeRange: state.CheckSizeRange.includes(size)
-            ? state.CheckSizeRange.filter(item => item !== size)
-            : [...state.CheckSizeRange, size]
-    })),
+
+    // // Check Size Range methods
+    // handleCheckSizeToggle: (size) => set((state) => ({
+    //     CheckSizeRange: state.CheckSizeRange.includes(size)
+    //         ? state.CheckSizeRange.filter(item => item !== size)
+    //         : [...state.CheckSizeRange, size]
+    // })),
     
-    removeCheckSize: (sizeToRemove) => set((state) => ({
-        CheckSizeRange: state.CheckSizeRange.filter(size => size !== sizeToRemove)
-    })),
+    // removeCheckSize: (sizeToRemove) => set((state) => ({
+    //     CheckSizeRange: state.CheckSizeRange.filter(size => size !== sizeToRemove)
+    // })),
 
     // Ticket Type methods
     handleTicketTypeToggle: (type) => set((state) => ({
