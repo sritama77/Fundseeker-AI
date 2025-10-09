@@ -314,6 +314,7 @@ def LLM():
                 
                 if investor and startup:
                     investor_name=str(investor.get("FirmName","Not Available"))
+                    investor_id=str(investor.get("_id","Not Available"))
                     inv_email=str(investor.get("CompanyEmail","Not Available"))
                     inv_company=str(investor.get("FirmName","Unknown Company"))
                     investor_location=str(investor.get("InvestorLocation","__"))
@@ -324,6 +325,7 @@ def LLM():
                     
                     investor_profiles.append({
                         "Investor_Name":investor_name,
+                        "Investor_ID":investor_id,
                         "Investor_Company":inv_company,
                         "Investor_Email":inv_email,
                         "Investor_Location":investor_location,
@@ -367,6 +369,7 @@ def LLM():
                 
                 if startup and investor:
                     startup_name = str(startup.get("StartupName", "Unknown Startup"))
+                    startup_id = str(startup.get("_id","Not Available"))
                     founder_name = str(startup.get("FounderName", "Unknown Founder"))
                     startup_email = str(startup.get("CompanyEmail", "Not Available"))
                     startup_location = str(startup.get("Location", "__"))
@@ -375,6 +378,7 @@ def LLM():
                     
                     startup_profiles.append({
                         "Startup_Name": startup_name,
+                        "Startup_ID":startup_id,
                         "Founder_Name": founder_name,
                         "Startup_Email": startup_email,
                         "Startup_Location": startup_location,

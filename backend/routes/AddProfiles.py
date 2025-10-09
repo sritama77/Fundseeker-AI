@@ -15,7 +15,7 @@ cart_collection = db_main["cart"]
 def AddToCart():
         #body
         data = request.json
-
+        print(data)
         IsUser = cart_collection.find_one({"userid":ObjectId(data["_id"])})
         if IsUser:
             if IsUser["userid"] == ObjectId(data["_id"]):
