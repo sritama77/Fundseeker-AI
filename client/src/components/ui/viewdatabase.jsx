@@ -73,7 +73,7 @@ function ViewDatabaseComponent({ pageSet, currentPage }) {
 
       if(res?.data?.updated){
         setLoading(true)
-        toast.success("deleted succesfully")
+        toast.success("Deleted Successfully")
       }
     } catch (error) {
       console.error("Error deleting connection:", error);

@@ -24,6 +24,8 @@ function AnalysedTableComponent({ pageSet, currentPage }) {
         token ? setUserid(token) : setUserid(null)
     }, [])
 
+  
+
     // Cycle through loading texts
     useEffect(() => {
         if (!isMatched) {
@@ -75,7 +77,7 @@ function AnalysedTableComponent({ pageSet, currentPage }) {
          }
         
          if(res?.data?.updated){
-            return toast.success("Succesfully Added")
+            return toast.success("Successfully Added")
          }
 
         } catch (error) {
