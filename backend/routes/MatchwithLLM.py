@@ -106,7 +106,7 @@ def LLM():
         print(query)
         
         # Limit to 50 candidates for LLM analysis to manage costs and time
-        candidate_profiles = list(investor_collection.find(query).limit(15))
+        candidate_profiles = list(investor_collection.find(query).limit(5))
         
         print(f"✅ Retrieved {len(candidate_profiles)} potential investor profiles from MongoDB for deep analysis.\n")
         return candidate_profiles
@@ -136,7 +136,7 @@ def LLM():
         }
         
         # Limit to 50 candidates for LLM analysis
-        candidate_profiles = list(startup_collection.find(query).limit(15))
+        candidate_profiles = list(startup_collection.find(query).limit(5))
         
         print(f"✅ Retrieved {len(candidate_profiles)} potential startup profiles from MongoDB for deep analysis.\n")
         return candidate_profiles            
