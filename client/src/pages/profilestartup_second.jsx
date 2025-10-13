@@ -23,7 +23,7 @@ function ProfileStartupSecond({ pageSet }) {
 
         // Check if the value contains only numbers
         if (/^\d+$/.test(value)) {
-            setFundingRequirementINR(value);
+            setFundingRequirementINR(parseInt(value));
         } else {
             toast.error("Please enter numbers only");
         }

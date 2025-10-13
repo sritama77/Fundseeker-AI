@@ -100,9 +100,10 @@ def LLM():
         query = {
             "SelectedStages": stage_filter,
             "SelectedIndustries": {"$in": industries_filter},
-            "check_size_min_inr": {"$lte": funding_requirement},
+            # "check_size_min_inr": {"$gte": funding_requirement},
             "check_size_max_inr": {"$gte": funding_requirement}
         }
+        print(query)
         
         # Limit to 50 candidates for LLM analysis to manage costs and time
         candidate_profiles = list(investor_collection.find(query).limit(15))
