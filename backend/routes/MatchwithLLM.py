@@ -11,7 +11,7 @@ from datetime import datetime
 from db.db import db_main, client
 from pymongo import MongoClient
 from flask import Blueprint, request,jsonify
-import re
+
 
 load_dotenv()
 
@@ -103,7 +103,7 @@ def LLM():
             # "check_size_min_inr": {"$gte": funding_requirement},
             "check_size_max_inr": {"$gte": funding_requirement}
         }
-        print(query)
+        print("query is here\n",query)
         
         # Limit to 50 candidates for LLM analysis to manage costs and time
         candidate_profiles = list(investor_collection.find(query).limit(5))
@@ -132,9 +132,9 @@ def LLM():
         query = {
             "CurrentStage": {"$in": investor_stages},
             "StartupIndustryCategories": {"$in": investor_industries},
-            "FundingRequirementINR": {"$gte":check_size_min_inr,"$lte": check_size_max_inr}
+            "FundingRequirementINR": {"$lte": check_size_max_inr}
         }
-        
+        print("query is get_filtered_startup_candidates_from_mongo  here\n",query)
         # Limit to 50 candidates for LLM analysis
         candidate_profiles = list(startup_collection.find(query).limit(5))
         
