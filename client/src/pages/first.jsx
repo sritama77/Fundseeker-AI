@@ -19,6 +19,7 @@ function FirstPage({ pageSet }) {
       height="100%"
       width={"100%"}
       display={"flex"}
+      bgColor={"black"}
       justifyContent={"center"}
       alignItems={"center"}
     >
@@ -40,6 +41,7 @@ function FirstPage({ pageSet }) {
           height={"20%"}
           width={"100%"}
           display={"flex"}
+          //bgColor={"black"}
           justifyContent={"center"}
           alignItems={"center"}>
           <Image height={"120%"}

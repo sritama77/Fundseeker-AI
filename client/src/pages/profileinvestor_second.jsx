@@ -568,7 +568,7 @@ function ProfileInvestorSecond({ pageSet }) {
                                             Bio / Investment Thesis <Field.RequiredIndicator />
                                         </Field.Label>
                                         <Textarea
-                                            placeholder="We focus on early-stage cleantech startups."
+                                            placeholder="eg : We focus on early-stage cleantech startups."
                                             value={BioThesis}
                                             onChange={(e) => setBioThesis(e.target.value)}
                                             maxLength={200}
@@ -581,7 +581,7 @@ function ProfileInvestorSecond({ pageSet }) {
                                             resize="none"
                                         />
                                         <Text color="rgba(255, 255, 255, 0.7)" fontSize="11px" mt={1}>
-                                            eg : Make it concise but informative. ({BioThesis.length}/200)
+                                            Make it concise but informative. ({BioThesis.length}/200)
                                         </Text>
                                     </Field.Root>
                                 </Box>

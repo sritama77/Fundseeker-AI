@@ -13,10 +13,12 @@ function AnalysedTableComponent({ pageSet, currentPage }) {
     const [loadingTextIndex, setLoadingTextIndex] = useState(0);
 
     const loadingTexts = [
-        "Loading...",
+        "Starting the model...",
+        "Initializing matching...",
         "Looking through your specifications...",
+        "Filtering to your specifications...",
         "Curating the list of best matches for you...",
-        "Almost there..."
+        "Almost there!!"
     ];
 
     useEffect(() => {
@@ -27,15 +29,22 @@ function AnalysedTableComponent({ pageSet, currentPage }) {
   
 
     // Cycle through loading texts
-    useEffect(() => {
-        if (!isMatched) {
-            const interval = setInterval(() => {
-                setLoadingTextIndex((prevIndex) => (prevIndex + 1) % loadingTexts.length);
-            }, 4000); 
-
-            return () => clearInterval(interval);
-        }
-    }, [isMatched, loadingTexts.length]);
+useEffect(() => {
+    if (!isMatched) {
+        const interval = setInterval(() => {
+            setLoadingTextIndex((prevIndex) => {
+                const nextIndex = prevIndex + 1;
+                if (nextIndex >= loadingTexts.length - 1) {
+                    clearInterval(interval);
+                    return loadingTexts.length - 1;
+                }
+                return nextIndex;
+            });
+        }, 5000);
+        
+        return () => clearInterval(interval);
+    }
+}, [isMatched]);
 
     async function AnalayseModelHandler() {
         const res = await axios.post(`${import.meta.env.VITE_SERVER_URL}/modelanalysis`, {

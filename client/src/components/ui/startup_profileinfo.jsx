@@ -20,6 +20,12 @@ function ViewProfileComponent({ pageSet, currentPage }) {
     console.log(user);
   }, [user]);
 
+  // Helper function to format currency
+  const formatCurrency = (amount) => {
+    if (!amount) return '-';
+    return `₹${amount.toLocaleString('en-IN')}`;
+  };
+
   return (
     <Box
       height={"90%"}
@@ -212,6 +218,10 @@ function ViewProfileComponent({ pageSet, currentPage }) {
                   </Text>
                   {user?.BusinessModel ? (
                     <Text color="gray.700">{user?.BusinessModel}</Text>
+                  ) : (user?.check_size_min_inr && user?.check_size_max_inr) ? (
+                    <Text color="gray.700" fontSize="md">
+                      {formatCurrency(user?.check_size_min_inr)} - {formatCurrency(user?.check_size_max_inr)}
+                    </Text>
                   ) : user?.CheckSizeRange?.length > 0 ? (
                     <Box display="flex" flexWrap="wrap" gap={2}>
                       {user?.CheckSizeRange.map((range, index) => (
@@ -281,9 +291,9 @@ function ViewProfileComponent({ pageSet, currentPage }) {
                 <Box>
                   <Text color="black" fontWeight={600} as="span">Website:</Text>
                   <Text as="span" ml={2}>
-                    {user?.StartupWebsiteUrl || user?.InvestorWebsite ? (
+                    {user?.StartupWebsiteUrl || user?.InvestorSocialMedia ? (
                       <Link 
-                        href={user?.StartupWebsiteUrl || user?.InvestorWebsite} 
+                        href={user?.StartupWebsiteUrl || user?.InvestorSocialMedia} 
                         isExternal 
                         color="blue.600"
                         textDecoration="underline"
@@ -316,10 +326,11 @@ function ViewProfileComponent({ pageSet, currentPage }) {
               </Stack>
             </Box>
 
-            {/* Elevator Pitch / Bio-Thesis Section */}
+            {/* Elevator Pitch / Bio-Thesis / Funding Requirement Section */}
             <Box mb={6}>
               <Text fontSize="lg" fontWeight={600} color="black" mb={3}>
-                {user?.ElevatorPitch ? "Elevator Pitch" : "Bio-Thesis"}
+                {user?.ElevatorPitch ? "Elevator Pitch" : 
+                 user?.FundingRequirementINR ? "Funding Requirement" : "Bio-Thesis"}
               </Text>
               <Box 
                 p={4} 
@@ -328,13 +339,21 @@ function ViewProfileComponent({ pageSet, currentPage }) {
                 borderRadius="md"
                 bg="gray.50"
               >
-                {user?.ElevatorPitch || user?.BioThesis ? (
+                {user?.ElevatorPitch ? (
                   <Text color="gray.700" lineHeight="1.6">
-                    {user?.ElevatorPitch || user?.BioThesis}
+                    {user?.ElevatorPitch}
+                  </Text>
+                ) : user?.FundingRequirementINR ? (
+                  <Text color="gray.700" lineHeight="1.6" fontSize="lg" fontWeight={600}>
+                    {formatCurrency(user?.FundingRequirementINR)}
+                  </Text>
+                ) : user?.BioThesis ? (
+                  <Text color="gray.700" lineHeight="1.6">
+                    {user?.BioThesis}
                   </Text>
                 ) : (
                   <Text fontSize="sm" color="gray.500" textAlign="center">
-                    {user?.StartupName || user?.FounderName ? "No elevator pitch added yet" : "No bio-thesis added yet"}
+                    {user?.StartupName || user?.FounderName ? "No funding requirement added yet" : "No bio-thesis added yet"}
                   </Text>
                 )}
               </Box>
