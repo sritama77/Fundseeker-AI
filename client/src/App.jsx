@@ -15,11 +15,12 @@ import ProfileInvestorSecond from './pages/profileinvestor_second'
 import StartMatchingPage from './pages/startmatching'
 import UserDetails from './store/userform'
 import  axios from "axios"
+import AnalyzedTableStore from './store/analyze'
 function App() {
 const [page, setPage] = useState(8)
 const [token,setToken] = useState(null)
 const  {user,setUser,Reload,setReload} = UserDetails()
-
+const  {userid,setUserid} = AnalyzedTableStore()
 async function getUserDetails(token){
 
   if(token){
@@ -47,6 +48,7 @@ useEffect(()=>{
 const temp = localStorage.getItem("token")
 temp === null ? setToken(null) : setToken(temp)
 getUserDetails(temp)
+setUserid(temp)
 setReload(false)
 }
 },[Reload])

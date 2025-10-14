@@ -39,7 +39,7 @@ function ProfileInvestorSecond({ pageSet }) {
         }
 
         if (/^\d+$/.test(value)) {
-            setcheck_size_min_inr(value);
+            setcheck_size_min_inr(parseInt(value));
         } else {
             toast.error("Please enter numbers only");
         }
@@ -54,7 +54,7 @@ function ProfileInvestorSecond({ pageSet }) {
         }
 
         if (/^\d+$/.test(value)) {
-            setcheck_size_max_inr(value);
+            setcheck_size_max_inr(parseInt(value));
         } else {
             toast.error("Please enter numbers only");
         }
@@ -237,7 +237,7 @@ function ProfileInvestorSecond({ pageSet }) {
                     alignItems={"center"}
                     flexDirection={"column"}
                 >
-                    <Box height="95%"
+                    <Box height="90%"
                         width={"120%"}
                         zIndex={3}
                         display={"flex"}

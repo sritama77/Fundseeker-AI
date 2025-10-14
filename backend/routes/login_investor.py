@@ -21,7 +21,8 @@ def LoginInvestor():
     if cacheCheck:
         if json.loads(cacheCheck.decode())["Password"] == data["Password"]:
             return jsonify({"message":"success","id":json.loads(cacheCheck.decode())["_id"]})
-
+        else:
+            return jsonify({"message":"wrong email or pass"}) 
 
     result = investor_collection.find_one({"CompanyEmail":data["Email"]})
     if result:
@@ -29,5 +30,7 @@ def LoginInvestor():
         if result["Password"] == data["Password"]:
             r.set(f"user:{result['CompanyEmail']}",json.dumps(result),ex=600)
             return jsonify({"message":"success","id":result["_id"]})
+        else:
+            return jsonify({"message":"wrong email or pass"})
     else:
         return jsonify({"message":"wrong email or pass"})  

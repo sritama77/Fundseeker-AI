@@ -19,7 +19,9 @@ def LoginStartup():
   if checkCache:
       if json.loads(checkCache.decode())["Password"] == data["Password"]:
           return jsonify({"message":"success","id":json.loads(checkCache.decode())["_id"]})
-  
+      else:
+        return jsonify({"message":"wrong email or pass"}) 
+      
   #hitting database
   result = startup_collection.find_one({"CompanyEmail":data["Email"]})
   
@@ -27,7 +29,9 @@ def LoginStartup():
   if result:
     result["_id"] = str(result["_id"])
     if result["Password"] == data["Password"]:
-       r.set(f"user:{result['CompanyEmail']}",json.dumps(result),ex=600)
-       return jsonify({"message":"success","id":result["_id"]})
+        r.set(f"user:{result['CompanyEmail']}",json.dumps(result),ex=600)
+        return jsonify({"message":"success","id":result["_id"]})
+    else:
+        return jsonify({"message":"wrong email or pass"}) 
   else:
     return jsonify({"message":"wrong email or pass"})  

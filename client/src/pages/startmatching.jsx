@@ -7,10 +7,12 @@ import SideNavbar from "../components/ui/sidenavbar";
 import ViewDatabaseComponent from "../components/ui/viewdatabase"
 import AnalysedTableComponent from "../components/ui/analysedtable"
 import ViewProfileComponent from "../components/ui/startup_profileinfo"
+import AnalyzedTableStore from '../store/analyze';
 
 function StartMatchingPage({ pageSet, currentPage }) {
     const [ToggleComponent, setToggleComponent] = useState(0)
     const [StartMatching, setStartMatching] = useState(false)
+    const {refresh,setRefresh ,isMatched, setIsMatched,} = AnalyzedTableStore()
     useEffect(() => {
         const temp = localStorage.getItem("token")
         temp !== null ? null : pageSet(0)
@@ -200,7 +202,10 @@ function StartMatchingPage({ pageSet, currentPage }) {
                                             justifyContent={"center"}
                                             alignContent={"center"}
                                             fontSize={"16px"}
-                                            onClick={() => setStartMatching(true)}
+                                            onClick={() => {
+                                                setIsMatched(false)
+                                                setRefresh(true)
+                                                setStartMatching(true)}}
 
                                             _hover={{
                                                 backgroundColor: "#E5C48A",
