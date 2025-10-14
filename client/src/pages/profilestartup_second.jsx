@@ -43,7 +43,7 @@ function ProfileStartupSecond({ pageSet }) {
         if (!BusinessModel.trim()) {
             return toast.error("Please enter Business Model")
         }
-        if (!FundingRequirementINR.trim()) {
+        if (!FundingRequirementINR) {
             return toast.error("Please enter Funding Requirement")
         }
         if (!Competitors.trim()) {

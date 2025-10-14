@@ -61,11 +61,11 @@ function ProfileInvestorSecond({ pageSet }) {
     };
 
     const validateForm = () => {
-        if (!check_size_min_inr.trim()) {
+        if (!check_size_min_inr) {
             toast.error("Minimum Funding Offered is required");
             return false;
         }
-        if (!check_size_max_inr.trim()) {
+        if (!check_size_max_inr) {
             toast.error("Maximum Funding Offered is required");
             return false;
         }
